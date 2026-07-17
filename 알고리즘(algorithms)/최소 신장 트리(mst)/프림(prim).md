@@ -28,66 +28,81 @@
 import heapq
 import sys
 
+#가까운 정점부터 하나씩 붙여가며 MST 만들기
 def prim(graph, start, V):
     INF = sys.maxsize
     visited = [False] * (V + 1)
-    heap = [(0, start)]  # (가중치, 노드)
+
+    #(가중치, 정점) 형태로 힙에 담기
+    pq = [(0, start)]
     total = 0
 
-    while heap:
-        weight, node = heapq.heappop(heap)
+    #다익스트라랑 비슷하게 힙을 활용
+    while pq:
+        weight, u = heapq.heappop(pq)
 
-        if visited[node]:
+        #이미 트리에 넣은 놈이니 스킵
+        if visited[u]:
             continue
 
-        visited[node] = True
+        #제일 싼 간선으로 트리에 편입
+        visited[u] = True
         total += weight
 
-        for neighbor, w in graph[node]:
-            if not visited[neighbor]:
-                heapq.heappush(heap, (w, neighbor))
+        #얘랑 붙어있는 애들 후보로 던져놓기
+        for v, w in graph[u]:
+            if not visited[v]:
+                heapq.heappush(pq, (w, v))
 
     return total
 
-# 입력 예시
+#입력 예시
 from collections import defaultdict
 
 V, E = map(int, input().split())
 graph = defaultdict(list)
 for _ in range(E):
     u, v, w = map(int, input().split())
+
+    #양방향이니까 양쪽 다 넣기
     graph[u].append((v, w))
-    graph[v].append((u, w))  # 양방향
+    graph[v].append((u, w))
 ```
 
 #### C++
 ```cpp
+//가까운 정점부터 하나씩 붙여가며 MST 만들기
 long long prim(vector<vector<pair<int,int>>>& graph, int start, int V) {
     vector<bool> visited(V + 1, false);
-    // 최소 힙: (가중치, 노드)
+
+    //(가중치, 정점) 최소 힙
     priority_queue<pair<int,int>, vector<pair<int,int>>, greater<>> pq;
     pq.push({0, start});
     long long total = 0;
 
     while (!pq.empty()) {
         int weight = pq.top().first;
-        int node = pq.top().second;
+        int u = pq.top().second;
         pq.pop();
 
-        if (visited[node]) continue;
-        visited[node] = true;
+        //이미 트리에 넣은 놈이니 스킵
+        if (visited[u]) continue;
+
+        //제일 싼 간선으로 트리에 편입
+        visited[u] = true;
         total += weight;
 
-        for (auto& e : graph[node]) {   // e = (이웃, 가중치)
-            int next = e.first, w = e.second;
-            if (!visited[next])
-                pq.push({w, next});
+        //얘랑 붙어있는 애들 후보로 던져놓기
+        for (auto& e : graph[u]) {
+            int v = e.first, w = e.second;
+            if (!visited[v])
+                pq.push({w, v});
         }
     }
     return total;
 }
 
-// 입력 예시
+//입력 예시
 // int V, E; cin >> V >> E;
 // vector<vector<pair<int,int>>> graph(V + 1);
 // for (int i = 0; i < E; i++) {

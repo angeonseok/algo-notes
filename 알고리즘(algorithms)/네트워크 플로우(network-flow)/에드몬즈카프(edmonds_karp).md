@@ -26,20 +26,27 @@
 ```python
 from collections import deque, defaultdict
 
-def edmonds_karp(graph, capacity, source, sink, V):
+#BFS로 증가경로 찾아 흘리기를 더 못 흘릴 때까지 반복
+def edmonds_karp(graph, cap, s, t, V):
+    #소스 > 싱크 최단 증가경로 하나 찾아오기
     def bfs():
-        visited = {source: None}
-        queue = deque([source])
+        #visited가 부모 기록도 겸함. s 부모는 None
+        visited = {s: None}
+        queue = deque([s])
         while queue:
             v = queue.popleft()
-            if v == sink:
+
+            #싱크 찍었으면 부모 타고 거꾸로 경로 복원
+            if v == t:
                 path = []
                 while v is not None:
                     path.append(v)
                     v = visited[v]
                 return list(reversed(path))
+
+            #용량 남은 간선만 타고 진행
             for u in graph[v]:
-                if u not in visited and capacity[v][u] > 0:
+                if u not in visited and cap[v][u] > 0:
                     visited[u] = v
                     queue.append(u)
         return None
@@ -47,16 +54,18 @@ def edmonds_karp(graph, capacity, source, sink, V):
     total = 0
     while True:
         path = bfs()
+
+        #더 이상 경로 없으면 끝
         if not path:
             break
 
-        # 경로의 최소 잔여 용량
-        flow = min(capacity[path[i]][path[i+1]] for i in range(len(path)-1))
+        #경로에서 제일 좁은 목이 흘릴 수 있는 최대치
+        flow = min(cap[path[i]][path[i+1]] for i in range(len(path)-1))
 
-        # 용량 갱신
+        #흘린 만큼 정방향 깎고 역방향 채우기(나중에 취소 가능하게)
         for i in range(len(path) - 1):
-            capacity[path[i]][path[i+1]] -= flow
-            capacity[path[i+1]][path[i]] += flow  # 역방향
+            cap[path[i]][path[i+1]] -= flow
+            cap[path[i+1]][path[i]] += flow
 
         total += flow
 
@@ -66,41 +75,49 @@ def edmonds_karp(graph, capacity, source, sink, V):
 #### C++
 ```cpp
 vector<vector<int>> graph;
-vector<vector<int>> capacity;   // capacity[u][v] = 잔여 용량
 
-int edmondsKarp(int source, int sink, int V) {
+//cap[u][v]는 남은 용량
+vector<vector<int>> cap;
+
+//BFS로 증가경로 찾아 흘리기를 더 못 흘릴 때까지 반복
+int edmondsKarp(int s, int t, int V) {
     int total = 0;
     while (true) {
-        // BFS로 증가 경로 탐색 (부모 기록)
+        //parent가 방문 여부 겸 경로 복원용. s는 자기 자신을 부모로
         vector<int> parent(V, -1);
-        parent[source] = source;
+        parent[s] = s;
         queue<int> q;
-        q.push(source);
-        while (!q.empty() && parent[sink] == -1) {
+        q.push(s);
+
+        //용량 남은 간선만 타고 싱크 찾기
+        while (!q.empty() && parent[t] == -1) {
             int v = q.front(); q.pop();
             for (int u : graph[v])
-                if (parent[u] == -1 && capacity[v][u] > 0) {
+                if (parent[u] == -1 && cap[v][u] > 0) {
                     parent[u] = v;
                     q.push(u);
                 }
         }
-        if (parent[sink] == -1) break;   // 증가 경로 없음
 
-        // 경로의 최소 잔여 용량
+        //싱크 못 찍었으면 더 이상 경로 없으니 끝
+        if (parent[t] == -1) break;
+
+        //싱크에서 부모 거꾸로 타면서 제일 좁은 목 찾기
         int flow = INT_MAX;
-        for (int v = sink; v != source; v = parent[v])
-            flow = min(flow, capacity[parent[v]][v]);
+        for (int v = t; v != s; v = parent[v])
+            flow = min(flow, cap[parent[v]][v]);
 
-        // 용량 갱신 (역방향 포함)
-        for (int v = sink; v != source; v = parent[v]) {
-            capacity[parent[v]][v] -= flow;
-            capacity[v][parent[v]] += flow;
+        //흘린 만큼 정방향 깎고 역방향 채우기(취소용)
+        for (int v = t; v != s; v = parent[v]) {
+            cap[parent[v]][v] -= flow;
+            cap[v][parent[v]] += flow;
         }
         total += flow;
     }
     return total;
 }
-// 입력: graph에 u→v, v→u 둘 다 추가(중복 없이), capacity[u][v] += c
+
+//입력: graph에 u→v, v→u 둘 다 추가(중복 없이), cap[u][v] += c
 ```
 
 ## 5. 포드-풀커슨 vs 에드몬즈-카프 vs 디닉
@@ -119,5 +136,5 @@ int edmondsKarp(int source, int sink, int V) {
 
 ## 7. 자주 틀리는 포인트
 - 역방향 간선 추가 빠뜨리는 경우
-- 중복 간선 처리 → capacity 합산, graph는 중복 없이
+- 중복 간선 처리 → cap 합산, graph는 중복 없이
 - BFS 경로 복원 시 부모 배열 방향(자식 → 부모) 헷갈리는 경우

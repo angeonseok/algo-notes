@@ -43,65 +43,101 @@ Result divideAndConquer(Problem p) {
 
 #### Python
 ```python
+#지수를 반씩 접어서 O(log N)에 거듭제곱 구하기
 def power(base, exp, mod=None):
+    #더 쪼갤 게 없으면 1 박고 끝
     if exp == 0:
         return 1
+
+    #짝수면 반만 구해서 제곱하면 되니까 개이득
     if exp % 2 == 0:
         half = power(base, exp // 2, mod)
         result = half * half
+
+    #홀수면 하나 떼서 짝수로 만들어놓자
     else:
         result = base * power(base, exp - 1, mod)
 
+    #mod 있으면 매 단계 나머지 취해서 숫자 안 불어나게
     return result % mod if mod else result
 
-power(2, 10)        # 1024
-power(2, 10, 1000)  # 24 (mod 1000)
+#써먹기 > 1024, 24(mod 1000)
+power(2, 10)
+power(2, 10, 1000)
 ```
 
 #### C++
 ```cpp
+//지수를 반씩 접어서 O(log N)에 거듭제곱 구하기
 long long power(long long base, long long exp, long long mod = 0) {
+    //더 쪼갤 게 없으면 1 박고 끝
     if (exp == 0) return 1;
+
     long long result;
+
+    //짝수면 반만 구해서 제곱하면 되니까 개이득
     if (exp % 2 == 0) {
         long long half = power(base, exp / 2, mod);
         result = half * half;
-    } else {
+    }
+
+    //홀수면 하나 떼서 짝수로 만들어놓자
+    else {
         result = base * power(base, exp - 1, mod);
     }
+
+    //mod 있으면 매 단계 나머지 취해서 숫자 안 불어나게
     return mod ? result % mod : result;
 }
-// power(2, 10) == 1024;  power(2, 10, 1000) == 24
-// mod 없이 큰 지수를 넣으면 오버플로 → mod를 넣거나 매 단계 mod 필요
+
+//써먹기 > power(2, 10) == 1024, power(2, 10, 1000) == 24
+//mod 없이 큰 지수 넣으면 오버플로 > mod 넣거나 매 단계 mod 필요
 ```
 
 ### 행렬 거듭제곱 (피보나치 O(log N))
 
 #### Python
 ```python
+#행렬 곱은 걍 정의대로 3중 루프
 def mat_mul(A, B, mod):
     n = len(A)
     C = [[0] * n for _ in range(n)]
+
+    #커지기 전에 매번 mod 때려주자
     for i in range(n):
         for j in range(n):
             for k in range(n):
                 C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % mod
+
     return C
 
+#숫자 거듭제곱이랑 똑같은 원리, 곱셈만 행렬 곱으로 바꾼 것
 def mat_pow(M, exp, mod):
     n = len(M)
-    result = [[1 if i == j else 0 for j in range(n)] for i in range(n)]  # 단위 행렬
+
+    #단위 행렬로 시작해야 1 곱하는 효과
+    result = [[1 if i == j else 0 for j in range(n)] for i in range(n)]
+
+    #exp 비트 훑으면서 켜진 자리만 곱해서 모으기
     while exp:
         if exp % 2:
             result = mat_mul(result, M, mod)
+
+        #M을 계속 제곱해두면 M^1, M^2, M^4... 준비됨
         M = mat_mul(M, M, mod)
         exp //= 2
+
     return result
 
+#[[1,1],[1,0]]^n 하면 피보나치가 튀어나옴
 def fib(n, mod=1000000007):
+    #0, 1은 그대로 반환
     if n <= 1:
         return n
+
     M = [[1, 1], [1, 0]]
+
+    #n-1 제곱의 [0][0]이 fib(n)
     result = mat_pow(M, n - 1, mod)
     return result[0][0]
 ```
@@ -110,31 +146,47 @@ def fib(n, mod=1000000007):
 ```cpp
 typedef vector<vector<long long>> Matrix;
 
+//행렬 곱은 걍 정의대로 3중 루프
 Matrix matMul(Matrix& A, Matrix& B, long long mod) {
     int n = A.size();
     Matrix C(n, vector<long long>(n, 0));
+
+    //커지기 전에 매번 mod 때려주자
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
             for (int k = 0; k < n; k++)
                 C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % mod;
+
     return C;
 }
 
+//숫자 거듭제곱이랑 똑같은 원리, 곱셈만 행렬 곱으로 바꾼 것
 Matrix matPow(Matrix M, long long exp, long long mod) {
     int n = M.size();
     Matrix result(n, vector<long long>(n, 0));
-    for (int i = 0; i < n; i++) result[i][i] = 1;   // 단위 행렬
+
+    //단위 행렬로 시작해야 1 곱하는 효과
+    for (int i = 0; i < n; i++) result[i][i] = 1;
+
+    //exp 비트 훑으면서 켜진 자리만 곱해서 모으기
     while (exp) {
         if (exp & 1) result = matMul(result, M, mod);
+
+        //M을 계속 제곱해두면 M^1, M^2, M^4... 준비됨
         M = matMul(M, M, mod);
         exp >>= 1;
     }
     return result;
 }
 
+//{{1,1},{1,0}}^n 하면 피보나치가 튀어나옴
 long long fib(long long n, long long mod = 1000000007) {
+    //0, 1은 그대로 반환
     if (n <= 1) return n;
+
     Matrix M = {{1, 1}, {1, 0}};
+
+    //n-1 제곱의 [0][0]이 fib(n)
     Matrix result = matPow(M, n - 1, mod);
     return result[0][0];
 }
@@ -144,19 +196,24 @@ long long fib(long long n, long long mod = 1000000007) {
 
 #### Python
 ```python
-def quad(grid, r, c, size):
-    color = grid[r][c]
-    # 모두 같은 색이면 압축
+#(r, c)에서 시작하는 size짜리 정사각형 처리
+def quad(mat, r, c, size):
+    #왼쪽 위 색을 기준으로 잡고 비교하자
+    color = mat[r][c]
+
+    #하나라도 색 다르면 압축 실패
     for i in range(r, r + size):
         for j in range(c, c + size):
-            if grid[i][j] != color:
+            if mat[i][j] != color:
+                #반으로 갈라서 4등분 각각 다시 내려보내기
                 half = size // 2
-                quad(grid, r,        c,        half)
-                quad(grid, r,        c + half, half)
-                quad(grid, r + half, c,        half)
-                quad(grid, r + half, c + half, half)
+                quad(mat, r,        c,        half)
+                quad(mat, r,        c + half, half)
+                quad(mat, r + half, c,        half)
+                quad(mat, r + half, c + half, half)
                 return
-    # 전부 같은 색
+
+    #끝까지 왔으면 전부 같은 색이니까 하나로 압축
     result.append(color)
 ```
 
@@ -164,20 +221,25 @@ def quad(grid, r, c, size):
 ```cpp
 vector<int> result;
 
-void quad(vector<vector<int>>& grid, int r, int c, int size) {
-    int color = grid[r][c];
-    // 모두 같은 색인지 확인
+//(r, c)에서 시작하는 size짜리 정사각형 처리
+void quad(vector<vector<int>>& mat, int r, int c, int size) {
+    //왼쪽 위 색을 기준으로 잡고 비교하자
+    int color = mat[r][c];
+
+    //하나라도 색 다르면 압축 실패
     for (int i = r; i < r + size; i++)
         for (int j = c; j < c + size; j++)
-            if (grid[i][j] != color) {
+            if (mat[i][j] != color) {
+                //반으로 갈라서 4등분 각각 다시 내려보내기
                 int half = size / 2;
-                quad(grid, r,        c,        half);
-                quad(grid, r,        c + half, half);
-                quad(grid, r + half, c,        half);
-                quad(grid, r + half, c + half, half);
+                quad(mat, r,        c,        half);
+                quad(mat, r,        c + half, half);
+                quad(mat, r + half, c,        half);
+                quad(mat, r + half, c + half, half);
                 return;
             }
-    // 전부 같은 색
+
+    //끝까지 왔으면 전부 같은 색이니까 하나로 압축
     result.push_back(color);
 }
 ```

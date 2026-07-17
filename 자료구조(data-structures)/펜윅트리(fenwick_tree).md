@@ -33,22 +33,29 @@
 N = 0
 tree = []
 
+#i번째에 delta 더하고, i를 담당 구간에 품는 상위 노드들도 다 갱신
 def update(i, delta):
     while i <= N:
         tree[i] += delta
-        i += i & (-i)  # 최하위 비트만큼 올라감
 
+        #최하위 비트만큼 올라가면 나를 포함하는 상위 노드
+        i += i & (-i)
+
+#1 ~ i 까지 누적합
 def prefix_sum(i):
     total = 0
     while i > 0:
         total += tree[i]
-        i -= i & (-i)  # 최하위 비트 제거
+
+        #최하위 비트 떼면 아직 안 센 앞 구간으로 점프
+        i -= i & (-i)
     return total
 
+#구간합은 누적합 빼기로 만들자
 def query(left, right):
     return prefix_sum(right) - prefix_sum(left - 1)
 
-# 사용 (1-indexed)
+#사용 (1-indexed)
 arr = [1, 2, 3, 4, 5]
 N = len(arr)
 tree = [0] * (N + 1)
@@ -56,37 +63,46 @@ tree = [0] * (N + 1)
 for i, v in enumerate(arr, 1):
     update(i, v)
 
-query(2, 4)   # 9
-update(3, 5)  # arr[3] += 5
-query(2, 4)   # 14
+query(2, 4)   #9
+update(3, 5)  #arr[3] += 5
+query(2, 4)   #14
 ```
 
 #### C++
 ```cpp
 int N;
-vector<long long> tree;   // 크기 N+1, 1-indexed
 
+//크기 N+1, 1-indexed
+vector<long long> tree;
+
+//i번째에 delta 더하고, i를 담당 구간에 품는 상위 노드들도 다 갱신
 void update(int i, long long delta) {
     while (i <= N) {
         tree[i] += delta;
-        i += i & (-i);   // 최하위 비트만큼 올라감
+
+        //최하위 비트만큼 올라가면 나를 포함하는 상위 노드
+        i += i & (-i);
     }
 }
 
+//1 ~ i 까지 누적합
 long long prefixSum(int i) {
     long long total = 0;
     while (i > 0) {
         total += tree[i];
-        i -= i & (-i);   // 최하위 비트 제거
+
+        //최하위 비트 떼면 아직 안 센 앞 구간으로 점프
+        i -= i & (-i);
     }
     return total;
 }
 
+//구간합은 누적합 빼기로 만들자
 long long query(int left, int right) {
     return prefixSum(right) - prefixSum(left - 1);
 }
 
-// 사용 (1-indexed)
+//사용 (1-indexed)
 // vector<int> arr = {1, 2, 3, 4, 5};
 // N = arr.size();  tree.assign(N + 1, 0);
 // for (int i = 1; i <= N; i++) update(i, arr[i-1]);
@@ -102,48 +118,62 @@ long long query(int left, int right) {
 class FenwickTree:
     def __init__(self, arr):
         self.n = len(arr)
-        self.tree = [0] * (self.n + 1)  # 1-indexed
+
+        #펜윅은 1-indexed라 한 칸 더 잡기
+        self.tree = [0] * (self.n + 1)
+
+        #원본 값들 하나씩 넣어서 트리 채우기
         for i, v in enumerate(arr, 1):
             self._update(i, v)
 
     def _update(self, i, delta):
+        #최하위 비트만큼 올라가면서 나를 품는 노드 전부 갱신
         while i <= self.n:
             self.tree[i] += delta
             i += i & (-i)
 
     def _prefix_sum(self, i):
         total = 0
+
+        #최하위 비트 떼면서 앞 구간으로 점프
         while i > 0:
             total += self.tree[i]
             i -= i & (-i)
         return total
 
-    def update(self, i, delta):   # 1-indexed, delta만큼 더하기
+    def update(self, i, delta):
+        #1-indexed, i번째에 delta만큼 더하기
         self._update(i, delta)
 
-    def query(self, left, right): # 1-indexed, 구간 합
+    def query(self, left, right):
+        #1-indexed, 구간합은 누적합 빼기로 만들자
         return self._prefix_sum(right) - self._prefix_sum(left - 1)
 
-# 사용
+#사용
 arr = [1, 2, 3, 4, 5]
 ft = FenwickTree(arr)
-ft.query(2, 4)   # 9
-ft.update(3, 5)  # arr[3] += 5
-ft.query(2, 4)   # 14
+ft.query(2, 4)   #9
+ft.update(3, 5)  #arr[3] += 5
+ft.query(2, 4)   #14
 ```
 
 #### C++
 ```cpp
 struct FenwickTree {
     int n;
-    vector<long long> tree;   // 1-indexed
+
+    //펜윅은 1-indexed라 한 칸 더 잡기
+    vector<long long> tree;
 
     FenwickTree(int n) : n(n), tree(n + 1, 0) {}
+
+    //원본 배열 받으면 값들 하나씩 넣어서 트리 채우기
     FenwickTree(vector<int>& arr) : n(arr.size()), tree(arr.size() + 1, 0) {
         for (int i = 1; i <= n; i++) update(i, arr[i-1]);
     }
 
-    void update(int i, long long delta) {   // 1-indexed, delta만큼 더하기
+    void update(int i, long long delta) {
+        //1-indexed, 최하위 비트만큼 올라가면서 나를 품는 노드 전부 갱신
         while (i <= n) {
             tree[i] += delta;
             i += i & (-i);
@@ -152,6 +182,8 @@ struct FenwickTree {
 
     long long prefixSum(int i) {
         long long total = 0;
+
+        //최하위 비트 떼면서 앞 구간으로 점프
         while (i > 0) {
             total += tree[i];
             i -= i & (-i);
@@ -159,12 +191,13 @@ struct FenwickTree {
         return total;
     }
 
-    long long query(int left, int right) {   // 1-indexed, 구간 합
+    long long query(int left, int right) {
+        //1-indexed, 구간합은 누적합 빼기로 만들자
         return prefixSum(right) - prefixSum(left - 1);
     }
 };
 
-// 사용
+//사용
 // vector<int> arr = {1, 2, 3, 4, 5};
 // FenwickTree ft(arr);
 // ft.query(2, 4);    // 9
@@ -189,17 +222,25 @@ query:  i -= i & (-i)  → 하위 구간으로 이동
 
 #### Python
 ```python
+#앞에 이미 나온 놈들 중 나보다 큰 게 몇 개인지 세면 그게 역전 쌍
 def count_inversions(arr):
     n = len(arr)
+
+    #값이 커도 트리 안 커지게 등수로 압축하기
     sorted_arr = sorted(set(arr))
     rank = {v: i+1 for i, v in enumerate(sorted_arr)}
 
     ft = FenwickTree([0] * n)
     inversions = 0
 
+    #앞에서부터 하나씩 넣어보자
     for v in arr:
         r = rank[v]
+
+        #이미 넣어둔 놈들 중 나보다 등수 큰 개수 세기
         inversions += ft.query(r + 1, n) if r + 1 <= n else 0
+
+        #나도 넣어둬야 뒤에 오는 놈이 셀 수 있음
         ft.update(r, 1)
 
     return inversions
@@ -207,9 +248,11 @@ def count_inversions(arr):
 
 #### C++
 ```cpp
+//앞에 이미 나온 놈들 중 나보다 큰 게 몇 개인지 세면 그게 역전 쌍
 long long countInversions(vector<int>& arr) {
     int n = arr.size();
-    // 좌표 압축
+
+    //값이 커도 트리 안 커지게 등수로 압축하기
     vector<int> vals = arr;
     sort(vals.begin(), vals.end());
     vals.erase(unique(vals.begin(), vals.end()), vals.end());
@@ -218,10 +261,15 @@ long long countInversions(vector<int>& arr) {
     FenwickTree ft(m);
     long long inversions = 0;
 
+    //앞에서부터 하나씩 넣어보자
     for (int v : arr) {
-        // rank: 1-indexed 압축 좌표
+        //내 등수 찾기. 펜윅이 1-indexed니까 +1
         int r = lower_bound(vals.begin(), vals.end(), v) - vals.begin() + 1;
+
+        //이미 넣어둔 놈들 중 나보다 등수 큰 개수 세기
         if (r + 1 <= m) inversions += ft.query(r + 1, m);
+
+        //나도 넣어둬야 뒤에 오는 놈이 셀 수 있음
         ft.update(r, 1);
     }
     return inversions;

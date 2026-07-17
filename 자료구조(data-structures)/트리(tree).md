@@ -45,16 +45,20 @@
 class TreeNode:
     def __init__(self, val):
         self.val = val
+
+        #이진 트리 기준이라 자식은 좌우 둘뿐
         self.left = None
-        self.right = None  # 이진 트리 기준
+        self.right = None
 ```
 
 #### C++
 ```cpp
 struct TreeNode {
     int val;
+
+    //이진 트리 기준이라 자식은 좌우 둘뿐
     TreeNode* left;
-    TreeNode* right;   // 이진 트리 기준
+    TreeNode* right;
     TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
 };
 ```
@@ -70,23 +74,31 @@ input = sys.stdin.readline
 N = int(input())
 tree = defaultdict(list)
 
+#간선 N-1개 받기
 for _ in range(N - 1):
     u, v = map(int, input().split())
+
+    #무방향이니까 양쪽 다 넣어두자
     tree[u].append(v)
-    tree[v].append(u)  # 무방향
+    tree[v].append(u)
 ```
 
 #### C++
 ```cpp
 int N;
 cin >> N;
-vector<vector<int>> tree(N + 1);   // 1-indexed
 
+//1-indexed
+vector<vector<int>> tree(N + 1);
+
+//간선 N-1개 받기
 for (int i = 0; i < N - 1; i++) {
     int u, v;
     cin >> u >> v;
+
+    //무방향이니까 양쪽 다 넣어두자
     tree[u].push_back(v);
-    tree[v].push_back(u);   // 무방향
+    tree[v].push_back(u);
 }
 ```
 
@@ -96,6 +108,7 @@ for (int i = 0; i < N - 1; i++) {
 ```python
 from collections import deque
 
+#무방향으로 받은 트리를 root부터 훑어서 부모/자식 방향 잡아주기
 def build_tree(tree, root, N):
     parent = [-1] * (N + 1)
     children = defaultdict(list)
@@ -106,18 +119,21 @@ def build_tree(tree, root, N):
 
     while queue:
         node = queue.popleft()
-        for neighbor in tree[node]:
-            if not visited[neighbor]:
-                visited[neighbor] = True
-                parent[neighbor] = node
-                children[node].append(neighbor)
-                queue.append(neighbor)
+
+        #먼저 온 쪽이 부모. 그 방향으로 관계 확정
+        for v in tree[node]:
+            if not visited[v]:
+                visited[v] = True
+                parent[v] = node
+                children[node].append(v)
+                queue.append(v)
 
     return parent, children
 ```
 
 #### C++
 ```cpp
+//무방향으로 받은 트리를 root부터 훑어서 부모/자식 방향 잡아주기
 void buildTree(vector<vector<int>>& tree, int root, int N,
                vector<int>& parent, vector<vector<int>>& children) {
     parent.assign(N + 1, -1);
@@ -130,12 +146,14 @@ void buildTree(vector<vector<int>>& tree, int root, int N,
 
     while (!q.empty()) {
         int node = q.front(); q.pop();
-        for (int next : tree[node]) {
-            if (!visited[next]) {
-                visited[next] = true;
-                parent[next] = node;
-                children[node].push_back(next);
-                q.push(next);
+
+        //먼저 온 쪽이 부모. 그 방향으로 관계 확정
+        for (int v : tree[node]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                parent[v] = node;
+                children[node].push_back(v);
+                q.push(v);
             }
         }
     }
@@ -163,21 +181,25 @@ void buildTree(vector<vector<int>>& tree, int root, int N,
 
 #### Python
 ```python
-def preorder(node):
-    if not node:
+def preorder(v):
+    if not v:
         return
-    print(node.val)   # 루트 먼저
-    preorder(node.left)
-    preorder(node.right)
+
+    #루트 먼저 찍고 왼 > 오
+    print(v.val)
+    preorder(v.left)
+    preorder(v.right)
 ```
 
 #### C++
 ```cpp
-void preorder(TreeNode* node) {
-    if (!node) return;
-    cout << node->val << "\n";   // 루트 먼저
-    preorder(node->left);
-    preorder(node->right);
+void preorder(TreeNode* v) {
+    if (!v) return;
+
+    //루트 먼저 찍고 왼 > 오
+    cout << v->val << "\n";
+    preorder(v->left);
+    preorder(v->right);
 }
 ```
 
@@ -185,22 +207,26 @@ void preorder(TreeNode* node) {
 
 #### Python
 ```python
-def inorder(node):
-    if not node:
+def inorder(v):
+    if not v:
         return
-    inorder(node.left)
-    print(node.val)   # 중간에 루트
-    inorder(node.right)
+    inorder(v.left)
+
+    #왼쪽 다 보고 중간에 루트, 그담 오른쪽
+    print(v.val)
+    inorder(v.right)
 ```
 - BST에서 중위 순회하면 오름차순 정렬된 결과가 나옴
 
 #### C++
 ```cpp
-void inorder(TreeNode* node) {
-    if (!node) return;
-    inorder(node->left);
-    cout << node->val << "\n";   // 중간에 루트
-    inorder(node->right);
+void inorder(TreeNode* v) {
+    if (!v) return;
+    inorder(v->left);
+
+    //왼쪽 다 보고 중간에 루트, 그담 오른쪽
+    cout << v->val << "\n";
+    inorder(v->right);
 }
 ```
 
@@ -208,22 +234,26 @@ void inorder(TreeNode* node) {
 
 #### Python
 ```python
-def postorder(node):
-    if not node:
+def postorder(v):
+    if not v:
         return
-    postorder(node.left)
-    postorder(node.right)
-    print(node.val)   # 루트 마지막
+    postorder(v.left)
+    postorder(v.right)
+
+    #자식 둘 다 끝낸 뒤에 루트. 폴더 삭제/수식 계산할 때 이 순서
+    print(v.val)
 ```
 - 자식을 먼저 처리해야 할 때 (폴더 삭제, 수식 계산 등)
 
 #### C++
 ```cpp
-void postorder(TreeNode* node) {
-    if (!node) return;
-    postorder(node->left);
-    postorder(node->right);
-    cout << node->val << "\n";   // 루트 마지막
+void postorder(TreeNode* v) {
+    if (!v) return;
+    postorder(v->left);
+    postorder(v->right);
+
+    //자식 둘 다 끝낸 뒤에 루트. 폴더 삭제/수식 계산할 때 이 순서
+    cout << v->val << "\n";
 }
 ```
 
@@ -233,6 +263,7 @@ void postorder(TreeNode* node) {
 ```python
 from collections import deque
 
+#위 레벨부터 한 줄씩 훑기. 결국 BFS
 def level_order(root):
     if not root:
         return
@@ -240,6 +271,8 @@ def level_order(root):
     while queue:
         node = queue.popleft()
         print(node.val)
+
+        #자식 있으면 큐에 넣어서 다음 레벨로 이어가기
         if node.left:
             queue.append(node.left)
         if node.right:
@@ -248,6 +281,7 @@ def level_order(root):
 
 #### C++
 ```cpp
+//위 레벨부터 한 줄씩 훑기. 결국 BFS
 void levelOrder(TreeNode* root) {
     if (!root) return;
     queue<TreeNode*> q;
@@ -255,6 +289,8 @@ void levelOrder(TreeNode* root) {
     while (!q.empty()) {
         TreeNode* node = q.front(); q.pop();
         cout << node->val << "\n";
+
+        //자식 있으면 큐에 넣어서 다음 레벨로 이어가기
         if (node->left)  q.push(node->left);
         if (node->right) q.push(node->right);
     }

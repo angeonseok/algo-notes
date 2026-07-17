@@ -29,36 +29,44 @@
 ```python
 from collections import deque
 
-def topological_sort(graph, in_degree, V):
-    queue = deque()
+#의존관계 순서대로 노드 나열하기
+def topological_sort(graph, indegree, V):
+    q = deque()
 
+    #진입차수 0 = 나보다 먼저 할 게 없는 놈. 얘네부터 시작
     for i in range(1, V + 1):
-        if in_degree[i] == 0:
-            queue.append(i)
+        if indegree[i] == 0:
+            q.append(i)
 
     result = []
-    while queue:
-        node = queue.popleft()
+    while q:
+        node = q.popleft()
         result.append(node)
 
-        for neighbor in graph[node]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
+        #나 처리했으니까 나만 기다리던 놈들 차수 하나씩 까주자
+        for v in graph[node]:
+            indegree[v] -= 1
 
-    # 사이클 감지
+            #기다릴 게 없어졌으면 얘도 큐에
+            if indegree[v] == 0:
+                q.append(v)
+
+    #사이클 있으면 서로 물고 있어서 큐에 못 들어감 > 개수가 모자람
     if len(result) != V:
-        return None  # 사이클 존재
+        return None
 
     return result
 ```
 
 #### C++
 ```cpp
-vector<int> topologicalSort(vector<vector<int>>& graph, vector<int>& in_degree, int V) {
+//의존관계 순서대로 노드 나열하기
+vector<int> topologicalSort(vector<vector<int>>& graph, vector<int>& indegree, int V) {
     queue<int> q;
+
+    //진입차수 0 = 나보다 먼저 할 게 없는 놈. 얘네부터 시작
     for (int i = 1; i <= V; i++)
-        if (in_degree[i] == 0)
+        if (indegree[i] == 0)
             q.push(i);
 
     vector<int> result;
@@ -66,65 +74,93 @@ vector<int> topologicalSort(vector<vector<int>>& graph, vector<int>& in_degree, 
         int node = q.front(); q.pop();
         result.push_back(node);
 
-        for (int next : graph[node]) {
-            in_degree[next]--;
-            if (in_degree[next] == 0)
-                q.push(next);
+        //나 처리했으니까 나만 기다리던 놈들 차수 하나씩 까주자
+        for (int v : graph[node]) {
+            indegree[v]--;
+
+            //기다릴 게 없어졌으면 얘도 큐에
+            if (indegree[v] == 0)
+                q.push(v);
         }
     }
 
-    if ((int)result.size() != V) return {};   // 사이클 존재
+    //사이클 있으면 서로 물고 있어서 큐에 못 들어감 > 개수가 모자람
+    if ((int)result.size() != V) return {};
+
     return result;
 }
-// 입력: graph[u].push_back(v); in_degree[v]++;
+
+//입력: graph[u].push_back(v); indegree[v]++;
 ```
 
 ### 최장 경로 (위상 정렬 + DP)
 
 #### Python
 ```python
-def longest_path(graph, in_degree, V):
-    queue = deque()
+#DAG라 순서대로 훑으면 앞쪽 dp는 이미 확정. 그대로 이어붙이면 됨
+def longest_path(graph, indegree, V):
+    q = deque()
+
+    #dp[i] = i까지 오는 최장거리
     dp = [0] * (V + 1)
 
+    #진입차수 0인 놈들부터 시작
     for i in range(1, V + 1):
-        if in_degree[i] == 0:
-            queue.append(i)
+        if indegree[i] == 0:
+            q.append(i)
 
-    while queue:
-        node = queue.popleft()
-        for neighbor, weight in graph[node]:
-            dp[neighbor] = max(dp[neighbor], dp[node] + weight)
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
+    while q:
+        node = q.popleft()
+
+        for v, w in graph[node]:
+            #나 거쳐서 가는 게 더 길면 갱신하자
+            dp[v] = max(dp[v], dp[node] + w)
+
+            indegree[v] -= 1
+
+            #들어오는 간선 다 봤으면 dp 확정 > 큐에
+            if indegree[v] == 0:
+                q.append(v)
 
     return max(dp)
 ```
 
 #### C++
 ```cpp
-long long longestPath(vector<vector<pair<int,int>>>& graph, vector<int>& in_degree, int V) {
+//DAG라 순서대로 훑으면 앞쪽 dp는 이미 확정. 그대로 이어붙이면 됨
+long long longestPath(vector<vector<pair<int,int>>>& graph, vector<int>& indegree, int V) {
     queue<int> q;
+
+    //dp[i] = i까지 오는 최장거리
     vector<long long> dp(V + 1, 0);
 
+    //진입차수 0인 놈들부터 시작
     for (int i = 1; i <= V; i++)
-        if (in_degree[i] == 0)
+        if (indegree[i] == 0)
             q.push(i);
 
     while (!q.empty()) {
         int node = q.front(); q.pop();
-        for (auto& e : graph[node]) {          // e = (이웃, 가중치)
-            int next = e.first, weight = e.second;
-            dp[next] = max(dp[next], dp[node] + weight);
-            in_degree[next]--;
-            if (in_degree[next] == 0)
-                q.push(next);
+
+        //e = (이웃, 가중치)
+        for (auto& e : graph[node]) {
+            int v = e.first, w = e.second;
+
+            //나 거쳐서 가는 게 더 길면 갱신하자
+            dp[v] = max(dp[v], dp[node] + w);
+
+            indegree[v]--;
+
+            //들어오는 간선 다 봤으면 dp 확정 > 큐에
+            if (indegree[v] == 0)
+                q.push(v);
         }
     }
 
+    //제일 긴 놈 하나 뽑기
     long long ans = 0;
     for (int i = 1; i <= V; i++) ans = max(ans, dp[i]);
+
     return ans;
 }
 ```

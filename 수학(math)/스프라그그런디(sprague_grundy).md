@@ -49,8 +49,9 @@ mex({})        = 0  (빈 집합)
 
 #### Python
 ```python
+#s에 없는 가장 작은 음 아닌 정수 찾기 (mex)
 def mex(s):
-    # 집합 s에 포함되지 않는 최솟값 음이 아닌 정수
+    #0부터 하나씩 올려보다가 s에 없는 놈 나오면 그게 답
     i = 0
     while i in s:
         i += 1
@@ -59,9 +60,11 @@ def mex(s):
 
 #### C++
 ```cpp
+//s에 없는 가장 작은 음 아닌 정수 찾기 (mex)
 int mex(const set<int>& s) {
+    //0부터 하나씩 올려보다가 s에 없는 놈 나오면 그게 답
     int i = 0;
-    while (s.count(i)) i++;   // 0부터 없는 값 탐색
+    while (s.count(i)) i++;
     return i;
 }
 ```
@@ -72,25 +75,34 @@ int mex(const set<int>& s) {
 ```python
 from functools import lru_cache
 
+#현재 상태 state의 Grundy 값 구하기, next_states로 갈 수 있는 다음 상태 받음
 def grundy(state):
-    # state: 현재 게임 상태
-    # next_states(state): 이동 가능한 다음 상태들
+    #같은 상태 또 계산하기 아까우니까 캐싱
     @lru_cache(maxsize=None)
     def _grundy(state):
+        #갈 수 있는 상태들 Grundy 값 모아서
         reachable = {_grundy(next_state) for next_state in next_states(state)}
+
+        #거기 없는 최소값이 내 Grundy 값
         return mex(reachable)
     return _grundy(state)
 ```
 
 #### C++
 ```cpp
-map<int, int> memo;   // 상태 → Grundy 값 (상태를 int로 인코딩했다고 가정)
+//상태 → Grundy 값. 상태는 int로 인코딩했다고 치자
+map<int, int> memo;
 
 int grundy(int state) {
+    //이미 계산한 상태면 걍 꺼내 쓰기
     if (memo.count(state)) return memo[state];
+
+    //갈 수 있는 다음 상태들 Grundy 값 모으기
     set<int> reachable;
-    for (int nxt : next_states(state))   // 이동 가능한 다음 상태들
+    for (int nxt : next_states(state))
         reachable.insert(grundy(nxt));
+
+    //거기 없는 최소값이 내 Grundy 값
     return memo[state] = mex(reachable);
 }
 ```
@@ -101,36 +113,45 @@ int grundy(int state) {
 ```python
 from functools import lru_cache
 
-# N개의 돌에서 1~K개를 가져갈 수 있을 때 Grundy 값
+#돌 n개에서 1~k개 가져갈 수 있을 때 Grundy 값
 @lru_cache(maxsize=None)
 def grundy_stones(n, k):
+    #가져갈 돌 없으면 지금 둘 차례인 놈이 짐 → Grundy 0
     if n == 0:
-        return 0  # 가져갈 돌 없음 → 짐 (Grundy = 0)
+        return 0
+
+    #1개부터 k개(남은 것보다 많이는 못 가져감)까지 다 가본 상태 모으기
     reachable = set()
     for take in range(1, min(k, n) + 1):
         reachable.add(grundy_stones(n - take, k))
     return mex(reachable)
 
-# 예시: 10개 돌, 최대 3개 가져가기
+#예시: 10개 돌, 최대 3개 가져가기
 for i in range(11):
     print(f"n={i}: grundy={grundy_stones(i, 3)}")
-# 패턴: 0,1,2,3,0,1,2,3,... (주기 = k+1)
+#패턴: 0,1,2,3,0,1,2,3,... (주기 = k+1)
 ```
 
 #### C++
 ```cpp
-map<int, int> memo;   // n → Grundy 값 (k는 고정)
+//n → Grundy 값. k는 고정
+map<int, int> memo;
 
-// N개의 돌에서 1~K개를 가져갈 수 있을 때 Grundy 값
+//돌 n개에서 1~k개 가져갈 수 있을 때 Grundy 값
 int grundyStones(int n, int k) {
-    if (n == 0) return 0;                    // 가져갈 돌 없음 → 짐 (Grundy = 0)
+    //가져갈 돌 없으면 지금 둘 차례인 놈이 짐 → Grundy 0
+    if (n == 0) return 0;
+
+    //이미 계산한 n이면 걍 꺼내 쓰기
     if (memo.count(n)) return memo[n];
+
+    //1개부터 k개(남은 것보다 많이는 못 가져감)까지 다 가본 상태 모으기
     set<int> reachable;
     for (int take = 1; take <= min(k, n); take++)
         reachable.insert(grundyStones(n - take, k));
     return memo[n] = mex(reachable);
 }
-// 패턴: 0,1,2,3,0,1,2,3,... (주기 = k+1)
+//패턴: 0,1,2,3,0,1,2,3,... (주기 = k+1)
 ```
 
 ## 4. 실전 패턴
@@ -139,24 +160,25 @@ int grundyStones(int n, int k) {
 
 #### Python
 ```python
-# N개의 더미, 각 더미에서 임의 개수 가져가기
-# Grundy 값 = 더미 크기 자체
-# 전체 Grundy = 모든 더미 크기의 XOR
-
+#님 게임은 더미 하나의 Grundy가 걍 더미 크기라 전체는 다 XOR 하면 됨
 def nim_winner(piles):
     xor = 0
     for pile in piles:
         xor ^= pile
-    return xor != 0  # True면 현재 플레이어 승리
+
+    #XOR이 0 아니면 지금 둘 차례인 놈이 이김
+    return xor != 0
 ```
 
 #### C++
 ```cpp
-// Grundy 값 = 더미 크기 자체 → 전체 Grundy = 모든 더미의 XOR
+//님 게임은 더미 하나의 Grundy가 걍 더미 크기라 전체는 다 XOR 하면 됨
 bool nimWinner(const vector<int>& piles) {
     int x = 0;
     for (int pile : piles) x ^= pile;
-    return x != 0;   // true면 현재 플레이어 승리
+
+    //XOR이 0 아니면 지금 둘 차례인 놈이 이김
+    return x != 0;
 }
 ```
 
@@ -164,21 +186,25 @@ bool nimWinner(const vector<int>& piles) {
 
 #### Python
 ```python
-# 게임 A와 게임 B를 동시에 진행
-# 자기 턴에 둘 중 하나를 선택해서 이동
-
+#게임 A, B 동시 진행. 자기 턴에 둘 중 하나 골라 움직임
+#여러 게임 합칠 땐 각자 Grundy 값을 XOR
 def combined_winner(state_a, state_b):
     g_a = grundy_a(state_a)
     g_b = grundy_b(state_b)
-    return (g_a ^ g_b) != 0  # XOR이 0이 아니면 현재 플레이어 승리
+
+    #XOR이 0 아니면 지금 둘 차례인 놈이 이김
+    return (g_a ^ g_b) != 0
 ```
 
 #### C++
 ```cpp
+//여러 게임 합칠 땐 각자 Grundy 값을 XOR
 bool combinedWinner(int state_a, int state_b) {
     int g_a = grundyA(state_a);
     int g_b = grundyB(state_b);
-    return (g_a ^ g_b) != 0;   // XOR이 0이 아니면 현재 플레이어 승리
+
+    //XOR이 0 아니면 지금 둘 차례인 놈이 이김
+    return (g_a ^ g_b) != 0;
 }
 ```
 
@@ -186,12 +212,17 @@ bool combinedWinner(int state_a, int state_b) {
 
 #### Python
 ```python
+#(r, c) 칸의 Grundy 값
 @lru_cache(maxsize=None)
 def grundy_2d(r, c):
-    # (r, c)에서 이동 가능한 상태들의 Grundy 값
+    #갈 수 있는 칸들 Grundy 값 모으기
     reachable = set()
-    for dr, dc in moves:  # 이동 방향
+
+    #정해진 이동 방향으로 뻗어보기
+    for dr, dc in moves:
         nr, nc = r + dr, c + dc
+
+        #보드 밖으로 안 나가는 칸만
         if 0 <= nr < R and 0 <= nc < C:
             reachable.add(grundy_2d(nr, nc))
     return mex(reachable)
@@ -199,13 +230,19 @@ def grundy_2d(r, c):
 
 #### C++
 ```cpp
-int memo2d[R][C];   // -1로 초기화 (memset(memo2d, -1, sizeof(memo2d)))
+//-1로 초기화 해두기 (memset(memo2d, -1, sizeof(memo2d)))
+int memo2d[R][C];
 
 int grundy2d(int r, int c) {
+    //이미 계산한 칸이면 걍 꺼내 쓰기
     if (memo2d[r][c] != -1) return memo2d[r][c];
+
+    //갈 수 있는 칸들 Grundy 값 모으기
     set<int> reachable;
-    for (auto& mv : moves) {                       // 이동 방향 목록
+    for (auto& mv : moves) {
         int nr = r + mv.first, nc = c + mv.second;
+
+        //보드 밖으로 안 나가는 칸만
         if (0 <= nr && nr < R && 0 <= nc && nc < C)
             reachable.insert(grundy2d(nr, nc));
     }
@@ -246,20 +283,20 @@ def nim_misere_winner(piles):
     for pile in piles:
         xor ^= pile
 
-    # 모든 더미가 크기 1 이하인지 확인
+    #모든 더미가 크기 1 이하면 결론이 뒤집힘. 그것만 따로 분기
     all_one = all(p <= 1 for p in piles)
 
     if all_one:
-        # 더미 개수(= 돌 개수)가 홀수면 현재 플레이어 짐
-        return sum(piles) % 2 == 0  # True면 현재 플레이어 승리
+        #이 경우엔 돌 개수 홀수면 지금 둘 차례인 놈이 짐, 짝수면 이김
+        return sum(piles) % 2 == 0
     else:
-        # Normal play와 동일
+        #크기 2 이상 더미 있으면 걍 Normal play랑 똑같음
         return xor != 0
 
-# 예시
-print(nim_misere_winner([1, 1, 1]))  # False → 현재 플레이어 짐 (홀수 개)
-print(nim_misere_winner([1, 2, 3]))  # Normal play와 동일하게 XOR = 0 → 짐
-print(nim_misere_winner([2, 3]))     # XOR = 1 → 이김
+#예시
+print(nim_misere_winner([1, 1, 1]))  #False → 현재 플레이어 짐 (홀수 개)
+print(nim_misere_winner([1, 2, 3]))  #Normal play와 동일하게 XOR = 0 → 짐
+print(nim_misere_winner([2, 3]))     #XOR = 1 → 이김
 ```
 
 #### C++
@@ -268,19 +305,25 @@ bool nimMisereWinner(const vector<int>& piles) {
     int x = 0;
     long long total = 0;
     bool all_one = true;
+
+    //한 번 돌면서 XOR, 총합, 크기 2 이상 있는지 다 챙기기
     for (int p : piles) {
         x ^= p;
         total += p;
-        if (p > 1) all_one = false;   // 크기 2 이상 더미 존재 여부
+        if (p > 1) all_one = false;
     }
+
+    //모든 더미 1 이하면 돌 개수 홀수일 때 지금 둘 차례인 놈이 짐
     if (all_one)
-        return total % 2 == 0;   // 돌 개수가 홀수면 현재 플레이어 짐
+        return total % 2 == 0;
+
+    //크기 2 이상 더미 있으면 걍 Normal play랑 똑같음
     else
-        return x != 0;           // Normal play와 동일
+        return x != 0;
 }
-// nimMisereWinner({1,1,1}) → false (홀수 개, 현재 플레이어 짐)
-// nimMisereWinner({1,2,3}) → false (XOR = 0)
-// nimMisereWinner({2,3})   → true  (XOR = 1, 이김)
+//nimMisereWinner({1,1,1}) → false (홀수 개, 현재 플레이어 짐)
+//nimMisereWinner({1,2,3}) → false (XOR = 0)
+//nimMisereWinner({2,3})   → true  (XOR = 1, 이김)
 ```
 
 ### Normal play vs Misère 비교

@@ -31,25 +31,41 @@
 
 #### Python
 ```python
+#매 패스마다 최솟값 찾아서 앞으로 가져오기
 def selection_sort(arr):
     n = len(arr)
+
+    #마지막 한 놈은 자동으로 제자리니까 n-1까지만
     for i in range(n - 1):
+        #일단 i번째가 최솟값이라 치고 시작
         min_idx = i
+
+        #뒤쪽 안 확정된 구간에서 더 작은 놈 찾기
         for j in range(i + 1, n):
             if arr[j] < arr[min_idx]:
                 min_idx = j
+
+        #찾은 최솟값을 i자리에 박기. 이러면 i까지 확정
         arr[i], arr[min_idx] = arr[min_idx], arr[i]
     return arr
 ```
 
 #### C++
 ```cpp
+//매 패스마다 최솟값 찾아서 앞으로 가져오기
 void selectionSort(vector<int>& arr) {
     int n = arr.size();
+
+    //마지막 한 놈은 자동으로 제자리니까 n-1까지만
     for (int i = 0; i < n - 1; i++) {
+        //일단 i번째가 최솟값이라 치고 시작
         int min_idx = i;
+
+        //뒤쪽 안 확정된 구간에서 더 작은 놈 찾기
         for (int j = i + 1; j < n; j++)
             if (arr[j] < arr[min_idx]) min_idx = j;
+
+        //찾은 최솟값을 i자리에 박기. 이러면 i까지 확정
         swap(arr[i], arr[min_idx]);
     }
 }

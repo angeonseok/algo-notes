@@ -31,23 +31,33 @@ import sys
 from collections import defaultdict
 sys.setrecursionlimit(100000)
 
-def ford_fulkerson(graph, capacity, source, sink, V):
+#소스 > 싱크 최대 유량. 증가 경로 찾아 흐름 계속 밀어넣기
+def ford_fulkerson(graph, cap, s, t, V):
+    #DFS로 증가 경로 하나 찾아서 흘릴 수 있는 양 리턴
     def dfs(v, visited, flow):
-        if v == sink:
+        #싱크 도달하면 여기까지 온 최소 용량이 이번에 흘릴 양
+        if v == t:
             return flow
         visited.add(v)
+
+        #잔여 용량 남은 간선으로만 내려가기
         for u in graph[v]:
-            if u not in visited and capacity[v][u] > 0:
-                result = dfs(u, visited, min(flow, capacity[v][u]))
+            if u not in visited and cap[v][u] > 0:
+                result = dfs(u, visited, min(flow, cap[v][u]))
                 if result > 0:
-                    capacity[v][u] -= result
-                    capacity[u][v] += result  # 역방향 간선
+                    #흘린 만큼 정방향 깎고
+                    cap[v][u] -= result
+
+                    #나중에 취소할 수 있게 역방향에 채워두기
+                    cap[u][v] += result
                     return result
         return 0
 
     total = 0
+
+    #더 못 흘릴 때까지 증가 경로 계속 우려먹기
     while True:
-        flow = dfs(source, set(), float('inf'))
+        flow = dfs(s, set(), float('inf'))
         if flow == 0:
             break
         total += flow
@@ -57,20 +67,28 @@ def ford_fulkerson(graph, capacity, source, sink, V):
 
 #### C++
 ```cpp
-vector<vector<int>> graph;       // 인접 리스트
-vector<vector<int>> capacity;    // capacity[u][v] = 잔여 용량
+//graph = 인접 리스트, cap[u][v] = 잔여 용량
+vector<vector<int>> graph;
+vector<vector<int>> cap;
 vector<bool> visited;
-int sink;
+int t;
 
+//DFS로 증가 경로 하나 찾아서 흘릴 수 있는 양 리턴
 int dfs(int v, int flow) {
-    if (v == sink) return flow;
+    //싱크 도달하면 여기까지 온 최소 용량이 이번에 흘릴 양
+    if (v == t) return flow;
     visited[v] = true;
+
+    //잔여 용량 남은 간선으로만 내려가기
     for (int u : graph[v]) {
-        if (!visited[u] && capacity[v][u] > 0) {
-            int result = dfs(u, min(flow, capacity[v][u]));
+        if (!visited[u] && cap[v][u] > 0) {
+            int result = dfs(u, min(flow, cap[v][u]));
             if (result > 0) {
-                capacity[v][u] -= result;
-                capacity[u][v] += result;   // 역방향 간선
+                //흘린 만큼 정방향 깎고
+                cap[v][u] -= result;
+
+                //나중에 취소할 수 있게 역방향에 채워두기
+                cap[u][v] += result;
                 return result;
             }
         }
@@ -78,18 +96,21 @@ int dfs(int v, int flow) {
     return 0;
 }
 
-int fordFulkerson(int source, int snk, int V) {
-    sink = snk;
+//소스 > 싱크 최대 유량
+int fordFulkerson(int s, int snk, int V) {
+    t = snk;
     int total = 0;
+
+    //더 못 흘릴 때까지 증가 경로 계속 우려먹기
     while (true) {
         visited.assign(V, false);
-        int flow = dfs(source, INT_MAX);
+        int flow = dfs(s, INT_MAX);
         if (flow == 0) break;
         total += flow;
     }
     return total;
 }
-// 입력: graph[u].push_back(v); graph[v].push_back(u); capacity[u][v] += c;
+// 입력: graph[u].push_back(v); graph[v].push_back(u); cap[u][v] += c;
 ```
 
 ## 5. 포드-풀커슨 vs 에드몬즈-카프 vs 디닉

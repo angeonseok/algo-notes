@@ -25,37 +25,45 @@
 
 #### Python
 ```python
+#싼 간선부터 집어먹으면서 MST 만들기
 def kruskal(V, edges):
-    # 간선 가중치 기준 정렬
+    #싼 간선부터 봐야 하니까 가중치 기준 정렬
     edges.sort(key=lambda x: x[2])
 
+    #자기 자신을 부모로 시작해보자
     parent = list(range(V + 1))
 
+    #x의 루트를 경로를 압축하면서 찾자
     def find(x):
         if parent[x] != x:
             parent[x] = find(parent[x])
         return parent[x]
 
+    #루트가 같으면 이미 연결된 놈들이라 사이클. 다르면 통합하고 True
     def union(x, y):
-        rx, ry = find(x), find(y)
-        if rx == ry:
+        rootA, rootB = find(x), find(y)
+        if rootA == rootB:
             return False
-        parent[ry] = rx
+        parent[rootB] = rootA
         return True
 
     total = 0
-    count = 0
+    cnt = 0
 
+    #사이클 안 나는 간선만 골라 담기
     for u, v, w in edges:
         if union(u, v):
             total += w
-            count += 1
-            if count == V - 1:  # V-1개 선택하면 완료
+            cnt += 1
+
+            #V-1개 채웠으면 트리 완성이니 그만
+            if cnt == V - 1:
                 break
 
-    return total if count == V - 1 else -1  # -1: 연결 불가
+    #V-1개를 못 채웠으면 끊긴 그래프니까 -1
+    return total if cnt == V - 1 else -1
 
-# 입력 예시
+#입력 예시
 V, E = map(int, input().split())
 edges = []
 for _ in range(E):
@@ -67,41 +75,52 @@ for _ in range(E):
 ```cpp
 vector<int> parent;
 
+//x의 루트를 경로를 압축하면서 찾자
 int find(int x) {
-    if (parent[x] != x) parent[x] = find(parent[x]);   // 경로 압축
+    if (parent[x] != x) parent[x] = find(parent[x]);
     return parent[x];
 }
 
-bool unite(int x, int y) {   // union은 키워드 느낌이라 unite
-    int rx = find(x), ry = find(y);
-    if (rx == ry) return false;
-    parent[ry] = rx;
+//루트가 같으면 이미 연결된 놈들이라 사이클. 다르면 통합하고 true
+//union은 키워드 느낌이라 unite
+bool unite(int x, int y) {
+    int rootA = find(x), rootB = find(y);
+    if (rootA == rootB) return false;
+    parent[rootB] = rootA;
     return true;
 }
 
 struct Edge { int u, v, w; };
 
+//싼 간선부터 집어먹으면서 MST 만들기
 long long kruskal(int V, vector<Edge>& edges) {
-    // 간선 가중치 기준 오름차순 정렬
+    //싼 간선부터 봐야 하니까 가중치 기준 오름차순 정렬
     sort(edges.begin(), edges.end(),
          [](const Edge& a, const Edge& b){ return a.w < b.w; });
 
+    //자기 자신을 부모로 시작해보자
     parent.resize(V + 1);
     for (int i = 0; i <= V; i++) parent[i] = i;
 
     long long total = 0;
-    int count = 0;
+    int cnt = 0;
+
+    //사이클 안 나는 간선만 골라 담기
     for (auto& e : edges) {
         if (unite(e.u, e.v)) {
             total += e.w;
-            count++;
-            if (count == V - 1) break;   // V-1개 선택하면 완료
+            cnt++;
+
+            //V-1개 채웠으면 트리 완성이니 그만
+            if (cnt == V - 1) break;
         }
     }
-    return (count == V - 1) ? total : -1;   // -1: 연결 불가
+
+    //V-1개를 못 채웠으면 끊긴 그래프니까 -1
+    return (cnt == V - 1) ? total : -1;
 }
 
-// 입력 예시
+//입력 예시
 // int V, E; cin >> V >> E;
 // vector<Edge> edges(E);
 // for (int i = 0; i < E; i++) cin >> edges[i].u >> edges[i].v >> edges[i].w;

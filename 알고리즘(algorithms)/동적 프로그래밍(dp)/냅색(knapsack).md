@@ -27,30 +27,38 @@
 
 #### Python
 ```python
-def knapsack(N, W, weights, values):
+#0/1 냅색. 물건 하나씩 보면서 담을지 말지만 정하면 됨
+def knapsack(N, W, w, v):
+    #dp[i][j] = i번째까지 봤을 때 무게 j 이하로 담는 최대 가치
     dp = [[0] * (W + 1) for _ in range(N + 1)]
 
     for i in range(1, N + 1):
-        for w in range(W + 1):
-            # 안 담는 경우
-            dp[i][w] = dp[i-1][w]
-            # 담는 경우 (무게가 허용될 때)
-            if weights[i-1] <= w:
-                dp[i][w] = max(dp[i][w], dp[i-1][w - weights[i-1]] + values[i-1])
+        for j in range(W + 1):
+            #일단 안 담고 이전 줄 결과 그대로 들고오기
+            dp[i][j] = dp[i-1][j]
+
+            #무게 한도 안 걸리는 놈이면 담아본 결과랑 비교해서 큰 쪽
+            if w[i-1] <= j:
+                dp[i][j] = max(dp[i][j], dp[i-1][j - w[i-1]] + v[i-1])
 
     return dp[N][W]
 ```
 
 #### C++
 ```cpp
-int knapsack(int N, int W, vector<int>& weights, vector<int>& values) {
+//0/1 냅색. 물건 하나씩 보면서 담을지 말지만 정하면 됨
+int knapsack(int N, int W, vector<int>& w, vector<int>& v) {
+    //dp[i][j] = i번째까지 봤을 때 무게 j 이하로 담는 최대 가치
     vector<vector<int>> dp(N + 1, vector<int>(W + 1, 0));
 
     for (int i = 1; i <= N; i++)
-        for (int w = 0; w <= W; w++) {
-            dp[i][w] = dp[i-1][w];                 // 안 담는 경우
-            if (weights[i-1] <= w)                 // 담는 경우
-                dp[i][w] = max(dp[i][w], dp[i-1][w - weights[i-1]] + values[i-1]);
+        for (int j = 0; j <= W; j++) {
+            //일단 안 담고 이전 줄 결과 그대로 들고오기
+            dp[i][j] = dp[i-1][j];
+
+            //무게 한도 안 걸리는 놈이면 담아본 결과랑 비교해서 큰 쪽
+            if (w[i-1] <= j)
+                dp[i][j] = max(dp[i][j], dp[i-1][j - w[i-1]] + v[i-1]);
         }
     return dp[N][W];
 }
@@ -60,24 +68,32 @@ int knapsack(int N, int W, vector<int>& weights, vector<int>& values) {
 
 #### Python
 ```python
-def knapsack(N, W, weights, values):
+#0/1 냅색 1차원. 어차피 이전 줄만 쓰니까 한 줄로 우려먹기
+def knapsack(N, W, w, v):
+    #우리는 W값에 따라 결과가 달라진다
     dp = [0] * (W + 1)
 
     for i in range(N):
-        for w in range(W, weights[i] - 1, -1):  # 역순으로 순회 (중복 선택 방지)
-            dp[w] = max(dp[w], dp[w - weights[i]] + values[i])
+        #역순으로 가야 이번 물건이 두 번 담기지 않음
+        for j in range(W, w[i] - 1, -1):
+            #딱 맞게 넣거나, 이전 결과 + 무게 한도 안걸리는 놈 추가
+            dp[j] = max(dp[j], dp[j - w[i]] + v[i])
 
     return dp[W]
 ```
 
 #### C++
 ```cpp
-int knapsack(int N, int W, vector<int>& weights, vector<int>& values) {
+//0/1 냅색 1차원. 어차피 이전 줄만 쓰니까 한 줄로 우려먹기
+int knapsack(int N, int W, vector<int>& w, vector<int>& v) {
+    //우리는 W값에 따라 결과가 달라진다
     vector<int> dp(W + 1, 0);
 
     for (int i = 0; i < N; i++)
-        for (int w = W; w >= weights[i]; w--)   // 역순으로 순회 (중복 선택 방지)
-            dp[w] = max(dp[w], dp[w - weights[i]] + values[i]);
+        //역순으로 가야 이번 물건이 두 번 담기지 않음
+        //딱 맞게 넣거나, 이전 결과 + 무게 한도 안걸리는 놈 추가
+        for (int j = W; j >= w[i]; j--)
+            dp[j] = max(dp[j], dp[j - w[i]] + v[i]);
 
     return dp[W];
 }
@@ -87,26 +103,30 @@ int knapsack(int N, int W, vector<int>& weights, vector<int>& values) {
 
 #### Python
 ```python
-def unbounded_knapsack(N, W, weights, values):
+#완전 냅색. 같은 물건 몇 번이든 담아도 되는 버전
+def unbounded_knapsack(N, W, w, v):
     dp = [0] * (W + 1)
 
-    for w in range(1, W + 1):
+    #정순이라 dp[j - w[i]]에 이번 물건이 이미 들어있을 수 있음. 그게 노림수
+    for j in range(1, W + 1):
         for i in range(N):
-            if weights[i] <= w:
-                dp[w] = max(dp[w], dp[w - weights[i]] + values[i])  # 정순으로 순회
+            if w[i] <= j:
+                dp[j] = max(dp[j], dp[j - w[i]] + v[i])
 
     return dp[W]
 ```
 
 #### C++
 ```cpp
-int unboundedKnapsack(int N, int W, vector<int>& weights, vector<int>& values) {
+//완전 냅색. 같은 물건 몇 번이든 담아도 되는 버전
+int unboundedKnapsack(int N, int W, vector<int>& w, vector<int>& v) {
     vector<int> dp(W + 1, 0);
 
-    for (int w = 1; w <= W; w++)
+    //정순이라 dp[j - w[i]]에 이번 물건이 이미 들어있을 수 있음. 그게 노림수
+    for (int j = 1; j <= W; j++)
         for (int i = 0; i < N; i++)
-            if (weights[i] <= w)
-                dp[w] = max(dp[w], dp[w - weights[i]] + values[i]);   // 정순으로 순회
+            if (w[i] <= j)
+                dp[j] = max(dp[j], dp[j - w[i]] + v[i]);
 
     return dp[W];
 }
@@ -116,24 +136,24 @@ int unboundedKnapsack(int N, int W, vector<int>& weights, vector<int>& values) {
 
 #### Python
 ```python
-# 0/1 냅색: 역순 순회 (이미 선택한 물건 재선택 방지)
-for w in range(W, weight - 1, -1):
-    dp[w] = max(dp[w], dp[w - weight] + value)
+#0/1 냅색: 역순 순회 (이미 선택한 물건 재선택 방지)
+for j in range(W, w - 1, -1):
+    dp[j] = max(dp[j], dp[j - w] + v)
 
-# 완전 냅색: 정순 순회 (같은 물건 여러 번 선택 허용)
-for w in range(weight, W + 1):
-    dp[w] = max(dp[w], dp[w - weight] + value)
+#완전 냅색: 정순 순회 (같은 물건 여러 번 선택 허용)
+for j in range(w, W + 1):
+    dp[j] = max(dp[j], dp[j - w] + v)
 ```
 
 #### C++
 ```cpp
-// 0/1 냅색: 역순 순회 (이미 선택한 물건 재선택 방지)
-for (int w = W; w >= weight; w--)
-    dp[w] = max(dp[w], dp[w - weight] + value);
+//0/1 냅색: 역순 순회 (이미 선택한 물건 재선택 방지)
+for (int j = W; j >= w; j--)
+    dp[j] = max(dp[j], dp[j - w] + v);
 
-// 완전 냅색: 정순 순회 (같은 물건 여러 번 선택 허용)
-for (int w = weight; w <= W; w++)
-    dp[w] = max(dp[w], dp[w - weight] + value);
+//완전 냅색: 정순 순회 (같은 물건 여러 번 선택 허용)
+for (int j = w; j <= W; j++)
+    dp[j] = max(dp[j], dp[j - w] + v);
 ```
 
 ## 6. 이걸 떠올려야 할 때

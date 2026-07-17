@@ -27,40 +27,40 @@
 
 #### Python
 ```python
-# V개의 정점, 0-indexed
+#V개의 정점, 0-indexed
 V = 5
 graph = [[0] * V for _ in range(V)]
 
-# 간선 추가 (양방향)
+#양방향이면 양쪽 다 박아주자
 graph[0][1] = 1
 graph[1][0] = 1
 
-# 가중치 있는 경우
+#가중치 있으면 1 대신 가중치를 넣기
 graph[0][1] = 3
 graph[1][0] = 3
 
-# 간선 존재 확인
+#0이 아니면 연결된 거
 if graph[u][v]:
     print("연결됨")
 ```
 
 #### C++
 ```cpp
-// V개의 정점, 0-indexed
+//V개의 정점, 0-indexed
 int V = 5;
 vector<vector<int>> graph(V, vector<int>(V, 0));
 
-// 간선 추가 (양방향)
+//양방향이면 양쪽 다 박아주자
 graph[0][1] = 1;
 graph[1][0] = 1;
 
-// 가중치 있는 경우
+//가중치 있으면 1 대신 가중치를 넣기
 graph[0][1] = 3;
 graph[1][0] = 3;
 
-// 간선 존재 확인
+//0이 아니면 연결된 거
 if (graph[u][v]) {
-    // 연결됨
+    //연결됨
 }
 ```
 
@@ -70,31 +70,31 @@ if (graph[u][v]) {
 ```python
 from collections import defaultdict
 
-# 방법 1: defaultdict
+#방법 1: defaultdict 쓰면 초기화 신경 안 써도 됨
 graph = defaultdict(list)
 graph[0].append(1)
 graph[1].append(0)
 
-# 방법 2: 직접 초기화
+#방법 2: 정점 수 아니까 걍 직접 초기화
 V = 5
 graph = [[] for _ in range(V)]
 graph[0].append(1)
 graph[1].append(0)
 
-# 가중치 있는 경우 (튜플로)
-graph[0].append((1, 3))  # (이웃 노드, 가중치)
+#가중치 있으면 (이웃 노드, 가중치) 튜플로 담기
+graph[0].append((1, 3))
 graph[1].append((0, 3))
 ```
 
 #### C++
 ```cpp
-// 크기 V로 초기화한 인접 리스트
+//크기 V로 초기화한 인접 리스트
 int V = 5;
 vector<vector<int>> graph(V);
 graph[0].push_back(1);
 graph[1].push_back(0);
 
-// 가중치 있는 경우 (pair로: 이웃 노드, 가중치)
+//가중치 있으면 pair로 (이웃 노드, 가중치)
 vector<vector<pair<int,int>>> wgraph(V);
 wgraph[0].push_back({1, 3});
 wgraph[1].push_back({0, 3});
@@ -111,12 +111,13 @@ input = sys.stdin.readline
 V, E = map(int, input().split())
 graph = defaultdict(list)
 
+#양방향이면 반대쪽도 같이 넣어주자
 for _ in range(E):
     u, v = map(int, input().split())
     graph[u].append(v)
-    graph[v].append(u)  # 양방향이면 추가
+    graph[v].append(u)
 
-# 가중치 있는 경우
+#가중치 있으면 (정점, 가중치)로 담기
 for _ in range(E):
     u, v, w = map(int, input().split())
     graph[u].append((v, w))
@@ -127,16 +128,19 @@ for _ in range(E):
 ```cpp
 int V, E;
 cin >> V >> E;
-vector<vector<int>> graph(V + 1);   // 1-indexed 대비 +1
 
+//1-indexed 대비해서 +1
+vector<vector<int>> graph(V + 1);
+
+//양방향이면 반대쪽도 같이 넣어주자
 for (int i = 0; i < E; i++) {
     int u, v;
     cin >> u >> v;
     graph[u].push_back(v);
-    graph[v].push_back(u);   // 양방향이면 추가
+    graph[v].push_back(u);
 }
 
-// 가중치 있는 경우
+//가중치 있으면 pair로 (정점, 가중치)
 vector<vector<pair<int,int>>> wgraph(V + 1);
 for (int i = 0; i < E; i++) {
     int u, v, w;

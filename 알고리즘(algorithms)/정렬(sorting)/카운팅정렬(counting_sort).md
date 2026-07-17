@@ -33,21 +33,24 @@
 
 #### Python
 ```python
+#값의 등장 횟수만 세서 정렬하기
 def counting_sort(arr):
+    #빈 배열이면 할 것도 없음
     if not arr:
         return arr
 
+    #값 범위만큼만 카운트 배열 잡기. min_val은 음수 대비 오프셋
     max_val = max(arr)
     min_val = min(arr)
-    count = [0] * (max_val - min_val + 1)
+    cnt = [0] * (max_val - min_val + 1)
 
-    # 등장 횟수 카운트
+    #각 값이 몇 번 나왔는지 세기
     for v in arr:
-        count[v - min_val] += 1
+        cnt[v - min_val] += 1
 
-    # 카운트 순서대로 결과 생성
+    #카운트를 앞에서부터 읽으면 걍 정렬된 순서
     result = []
-    for i, c in enumerate(count):
+    for i, c in enumerate(cnt):
         result.extend([i + min_val] * c)
 
     return result
@@ -55,20 +58,23 @@ def counting_sort(arr):
 
 #### C++
 ```cpp
+//값의 등장 횟수만 세서 정렬하기
 vector<int> countingSort(vector<int>& arr) {
+    //빈 배열이면 할 것도 없음
     if (arr.empty()) return arr;
 
+    //값 범위만큼만 카운트 배열 잡기. min_val은 음수 대비 오프셋
     int max_val = *max_element(arr.begin(), arr.end());
     int min_val = *min_element(arr.begin(), arr.end());
-    vector<int> count(max_val - min_val + 1, 0);
+    vector<int> cnt(max_val - min_val + 1, 0);
 
-    // 등장 횟수 카운트
-    for (int v : arr) count[v - min_val]++;
+    //각 값이 몇 번 나왔는지 세기
+    for (int v : arr) cnt[v - min_val]++;
 
-    // 카운트 순서대로 결과 생성
+    //카운트를 앞에서부터 읽으면 걍 정렬된 순서
     vector<int> result;
-    for (int i = 0; i < (int)count.size(); i++)
-        for (int c = 0; c < count[i]; c++)
+    for (int i = 0; i < (int)cnt.size(); i++)
+        for (int c = 0; c < cnt[i]; c++)
             result.push_back(i + min_val);
     return result;
 }
@@ -78,51 +84,59 @@ vector<int> countingSort(vector<int>& arr) {
 
 #### Python
 ```python
+#같은 값끼리 원래 순서 지켜주는 버전
 def counting_sort_stable(arr):
+    #빈 배열이면 할 것도 없음
     if not arr:
         return arr
 
+    #값 범위만큼만 카운트 배열 잡기. min_val은 음수 대비 오프셋
     max_val = max(arr)
     min_val = min(arr)
-    count = [0] * (max_val - min_val + 1)
+    cnt = [0] * (max_val - min_val + 1)
 
+    #각 값이 몇 번 나왔는지 세기
     for v in arr:
-        count[v - min_val] += 1
+        cnt[v - min_val] += 1
 
-    # 누적 합
-    for i in range(1, len(count)):
-        count[i] += count[i - 1]
+    #누적 합 돌리면 각 값이 들어갈 자리(끝 인덱스)가 나옴
+    for i in range(1, len(cnt)):
+        cnt[i] += cnt[i - 1]
 
-    # 뒤에서부터 채워서 stable 유지
+    #뒤에서부터 채워야 같은 값의 원래 순서가 유지됨
     result = [0] * len(arr)
     for v in reversed(arr):
-        count[v - min_val] -= 1
-        result[count[v - min_val]] = v
+        cnt[v - min_val] -= 1
+        result[cnt[v - min_val]] = v
 
     return result
 ```
 
 #### C++
 ```cpp
+//같은 값끼리 원래 순서 지켜주는 버전
 vector<int> countingSortStable(vector<int>& arr) {
+    //빈 배열이면 할 것도 없음
     if (arr.empty()) return arr;
 
+    //값 범위만큼만 카운트 배열 잡기. min_val은 음수 대비 오프셋
     int max_val = *max_element(arr.begin(), arr.end());
     int min_val = *min_element(arr.begin(), arr.end());
-    vector<int> count(max_val - min_val + 1, 0);
+    vector<int> cnt(max_val - min_val + 1, 0);
 
-    for (int v : arr) count[v - min_val]++;
+    //각 값이 몇 번 나왔는지 세기
+    for (int v : arr) cnt[v - min_val]++;
 
-    // 누적 합
-    for (int i = 1; i < (int)count.size(); i++)
-        count[i] += count[i - 1];
+    //누적 합 돌리면 각 값이 들어갈 자리(끝 인덱스)가 나옴
+    for (int i = 1; i < (int)cnt.size(); i++)
+        cnt[i] += cnt[i - 1];
 
-    // 뒤에서부터 채워서 stable 유지
+    //뒤에서부터 채워야 같은 값의 원래 순서가 유지됨
     vector<int> result(arr.size());
     for (int i = (int)arr.size() - 1; i >= 0; i--) {
         int v = arr[i];
-        count[v - min_val]--;
-        result[count[v - min_val]] = v;
+        cnt[v - min_val]--;
+        result[cnt[v - min_val]] = v;
     }
     return result;
 }

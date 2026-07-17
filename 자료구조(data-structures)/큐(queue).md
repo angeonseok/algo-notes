@@ -30,17 +30,17 @@ from collections import deque
 
 queue = deque()
 
-# enqueue
+#enqueue
 queue.append(1)
 queue.append(2)
 
-# dequeue
+#dequeue
 front = queue.popleft()
 
-# front 확인
+#front 확인
 front = queue[0]
 
-# empty 체크
+#empty 체크
 if not queue:
     print("empty")
 ```
@@ -49,17 +49,17 @@ if not queue:
 ```cpp
 queue<int> q;
 
-// enqueue
+//enqueue
 q.push(1);
 q.push(2);
 
-// front 확인 + dequeue  (pop()은 값을 반환하지 않음)
+//pop()은 값을 안 돌려주니까 front()로 먼저 읽고 pop
 int front = q.front();
 q.pop();
 
-// empty 체크
+//empty 체크
 if (q.empty()) {
-    // empty
+    //empty
 }
 ```
 
@@ -71,32 +71,40 @@ if (q.empty()) {
 ```python
 from collections import deque
 
+#시작점에서 연결된 노드 전부 훑기
 def bfs(graph, start):
     queue = deque([start])
     visited = set([start])
 
+    #BFS는 큐를 활용
     while queue:
         node = queue.popleft()
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append(neighbor)
+
+        #꺼낼 때 말고 넣을 때 방문 체크해야 큐에 중복 안 쌓임
+        for v in graph[node]:
+            if v not in visited:
+                visited.add(v)
+                queue.append(v)
 ```
 
 #### C++
 ```cpp
+//시작점에서 연결된 노드 전부 훑기
 void bfs(vector<vector<int>>& graph, int start) {
     queue<int> q;
     q.push(start);
     vector<bool> visited(graph.size(), false);
     visited[start] = true;
 
+    //BFS는 큐를 활용
     while (!q.empty()) {
         int node = q.front(); q.pop();
-        for (int next : graph[node]) {
-            if (!visited[next]) {
-                visited[next] = true;
-                q.push(next);
+
+        //꺼낼 때 말고 넣을 때 방문 체크해야 큐에 중복 안 쌓임
+        for (int v : graph[node]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
             }
         }
     }
@@ -109,33 +117,41 @@ void bfs(vector<vector<int>>& graph, int start) {
 ```python
 from collections import deque
 
+#시작점 > 각 노드까지 최단 거리 구하기
 def bfs(graph, start):
-    queue = deque([(start, 0)])  # (노드, 거리)
+    #(노드, 거리) 형태로 큐에 담기
+    queue = deque([(start, 0)])
     visited = set([start])
 
     while queue:
-        node, dist = queue.popleft()
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append((neighbor, dist + 1))
+        node, d = queue.popleft()
+
+        #한 칸 더 갔으니까 d + 1 달아서 넣자
+        for v in graph[node]:
+            if v not in visited:
+                visited.add(v)
+                queue.append((v, d + 1))
 ```
 
 #### C++
 ```cpp
+//시작점 > 각 노드까지 최단 거리 구하기
 void bfs(vector<vector<int>>& graph, int start) {
-    queue<pair<int,int>> q;   // (노드, 거리)
+    //(노드, 거리) 형태로 큐에 담기
+    queue<pair<int,int>> q;
     q.push({start, 0});
     vector<bool> visited(graph.size(), false);
     visited[start] = true;
 
     while (!q.empty()) {
-        int node = q.front().first, dist = q.front().second;
+        int node = q.front().first, d = q.front().second;
         q.pop();
-        for (int next : graph[node]) {
-            if (!visited[next]) {
-                visited[next] = true;
-                q.push({next, dist + 1});
+
+        //한 칸 더 갔으니까 d + 1 달아서 넣자
+        for (int v : graph[node]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push({v, d + 1});
             }
         }
     }
@@ -148,30 +164,38 @@ void bfs(vector<vector<int>>& graph, int start) {
 ```python
 from collections import deque
 
+#상하좌우 4방향
 dx = [0, 0, 1, -1]
 dy = [1, -1, 0, 0]
 
-def bfs(grid, sx, sy):
+#(sx, sy)에서 시작해서 격자 퍼져나가기
+def bfs(mat, sx, sy):
     queue = deque([(sx, sy)])
-    visited = [[False] * len(grid[0]) for _ in range(len(grid))]
+    visited = [[False] * len(mat[0]) for _ in range(len(mat))]
     visited[sx][sy] = True
 
     while queue:
         x, y = queue.popleft()
+
+        #4방향 다 조사
         for i in range(4):
             nx, ny = x + dx[i], y + dy[i]
-            if 0 <= nx < len(grid) and 0 <= ny < len(grid[0]) and not visited[nx][ny]:
+
+            #범위부터 보고 visited 봐야 인덱스 안 터짐
+            if 0 <= nx < len(mat) and 0 <= ny < len(mat[0]) and not visited[nx][ny]:
                 visited[nx][ny] = True
                 queue.append((nx, ny))
 ```
 
 #### C++
 ```cpp
+//상하좌우 4방향
 int dx[] = {0, 0, 1, -1};
 int dy[] = {1, -1, 0, 0};
 
-void bfs(vector<vector<int>>& grid, int sx, int sy) {
-    int N = grid.size(), M = grid[0].size();
+//(sx, sy)에서 시작해서 격자 퍼져나가기
+void bfs(vector<vector<int>>& mat, int sx, int sy) {
+    int N = mat.size(), M = mat[0].size();
     queue<pair<int,int>> q;
     q.push({sx, sy});
     vector<vector<bool>> visited(N, vector<bool>(M, false));
@@ -180,8 +204,12 @@ void bfs(vector<vector<int>>& grid, int sx, int sy) {
     while (!q.empty()) {
         int x = q.front().first, y = q.front().second;
         q.pop();
+
+        //4방향 다 조사
         for (int i = 0; i < 4; i++) {
             int nx = x + dx[i], ny = y + dy[i];
+
+            //범위부터 보고 visited 봐야 인덱스 안 터짐
             if (0 <= nx && nx < N && 0 <= ny && ny < M && !visited[nx][ny]) {
                 visited[nx][ny] = true;
                 q.push({nx, ny});

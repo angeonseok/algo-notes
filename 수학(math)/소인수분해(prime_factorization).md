@@ -26,135 +26,179 @@
 
 #### Python
 ```python
+#작은 놈부터 나눠떨어지는 만큼 계속 빼내자
 def prime_factors(n):
     factors = []
     d = 2
+
+    #√n까지만 봐도 충분
     while d * d <= n:
+        #더 안 나눠질 때까지 같은 d로 계속 빼기
         while n % d == 0:
             factors.append(d)
             n //= d
         d += 1
+
+    #다 나누고 1보다 크게 남았으면 걔가 소수
     if n > 1:
-        factors.append(n)  # 남은 수가 소수
+        factors.append(n)
     return factors
 
-prime_factors(12)   # [2, 2, 3]
-prime_factors(100)  # [2, 2, 5, 5]
+prime_factors(12)   #[2, 2, 3]
+prime_factors(100)  #[2, 2, 5, 5]
 ```
 
 #### C++
 ```cpp
+//작은 놈부터 나눠떨어지는 만큼 계속 빼내자
 vector<long long> primeFactors(long long n) {
     vector<long long> factors;
+
+    //√n까지만 봐도 충분
     for (long long d = 2; d * d <= n; d++) {
+        //더 안 나눠질 때까지 같은 d로 계속 빼기
         while (n % d == 0) {
             factors.push_back(d);
             n /= d;
         }
     }
-    if (n > 1) factors.push_back(n);  // 남은 수가 소수
+
+    //다 나누고 1보다 크게 남았으면 걔가 소수
+    if (n > 1) factors.push_back(n);
     return factors;
 }
-// primeFactors(12)  → {2, 2, 3}
-// primeFactors(100) → {2, 2, 5, 5}
+//primeFactors(12)  → {2, 2, 3}
+//primeFactors(100) → {2, 2, 5, 5}
 ```
 
 ### 소인수와 지수 함께 구하기
 
 #### Python
 ```python
+#지수까지 필요하면 리스트 말고 딕셔너리에 세면서 담자
 def prime_factorization(n):
     factors = {}
     d = 2
+
+    #√n까지만 봐도 충분
     while d * d <= n:
+        #뺀 횟수가 곧 지수
         while n % d == 0:
             factors[d] = factors.get(d, 0) + 1
             n //= d
         d += 1
+
+    #다 나누고 1보다 크게 남았으면 걔가 소수
     if n > 1:
         factors[n] = factors.get(n, 0) + 1
     return factors
 
-prime_factorization(12)   # {2: 2, 3: 1}  → 2² × 3
-prime_factorization(100)  # {2: 2, 5: 2}  → 2² × 5²
+prime_factorization(12)   #{2: 2, 3: 1}  → 2² × 3
+prime_factorization(100)  #{2: 2, 5: 2}  → 2² × 5²
 ```
 
 #### C++
 ```cpp
+//지수까지 필요하면 세면서 담자
 map<long long, int> primeFactorization(long long n) {
-    map<long long, int> factors;   // 소수 → 지수 (자동 정렬)
+    //소수 → 지수. map이라 알아서 정렬됨
+    map<long long, int> factors;
+
+    //√n까지만 봐도 충분
     for (long long d = 2; d * d <= n; d++) {
+        //뺀 횟수가 곧 지수
         while (n % d == 0) {
             factors[d]++;
             n /= d;
         }
     }
+
+    //다 나누고 1보다 크게 남았으면 걔가 소수
     if (n > 1) factors[n]++;
     return factors;
 }
-// primeFactorization(12)  → {2:2, 3:1}  → 2² × 3
-// primeFactorization(100) → {2:2, 5:2}  → 2² × 5²
+//primeFactorization(12)  → {2:2, 3:1}  → 2² × 3
+//primeFactorization(100) → {2:2, 5:2}  → 2² × 5²
 ```
 
 ### 약수 개수 구하기
 
 #### Python
 ```python
-# 소인수분해 결과로 약수 개수 계산
-# n = p1^a1 * p2^a2 * ... → 약수 개수 = (a1+1)(a2+1)...
+#n = p1^a1 * p2^a2 * ... 면 약수 개수 = (a1+1)(a2+1)...
+#각 소수를 0~ai개 쓸 수 있으니까 지수마다 +1 해서 곱하기
 def count_divisors(n):
     factors = prime_factorization(n)
     result = 1
+
+    #소수가 뭔지는 상관없고 지수만 있으면 됨
     for exp in factors.values():
         result *= (exp + 1)
     return result
 
-count_divisors(12)  # (2+1)(1+1) = 6 → 1,2,3,4,6,12
+count_divisors(12)  #(2+1)(1+1) = 6 → 1,2,3,4,6,12
 ```
 
 #### C++
 ```cpp
-// n = p1^a1 * p2^a2 * ... → 약수 개수 = (a1+1)(a2+1)...
+//n = p1^a1 * p2^a2 * ... 면 약수 개수 = (a1+1)(a2+1)...
+//각 소수를 0~ai개 쓸 수 있으니까 지수마다 +1 해서 곱하기
 long long countDivisors(long long n) {
     map<long long, int> factors = primeFactorization(n);
     long long result = 1;
-    for (auto& kv : factors)          // C++14: 구조적 바인딩 대신 .second
+
+    //C++14엔 구조적 바인딩 없으니까 .second로 지수 꺼내기
+    for (auto& kv : factors)
         result *= (kv.second + 1);
     return result;
 }
-// countDivisors(12) → (2+1)(1+1) = 6 → 1,2,3,4,6,12
+//countDivisors(12) → (2+1)(1+1) = 6 → 1,2,3,4,6,12
 ```
 
 ### 약수 전체 구하기
 
 #### Python
 ```python
+#약수는 짝지어 나오니까 √n까지만 돌면서 둘 다 줍자
 def get_divisors(n):
     divisors = []
+
+    #i가 약수면 n//i도 약수
     for i in range(1, int(n**0.5) + 1):
         if n % i == 0:
             divisors.append(i)
+
+            #완전제곱수면 i랑 n//i가 같으니 중복 방지
             if i != n // i:
                 divisors.append(n // i)
+
+    #짝으로 주워서 순서 엉켜있음
     return sorted(divisors)
 
-get_divisors(12)  # [1, 2, 3, 4, 6, 12]
+get_divisors(12)  #[1, 2, 3, 4, 6, 12]
 ```
 
 #### C++
 ```cpp
+//약수는 짝지어 나오니까 √n까지만 돌면서 둘 다 줍자
 vector<long long> getDivisors(long long n) {
     vector<long long> divisors;
-    for (long long i = 1; i * i <= n; i++) {   // 실수 sqrt 대신 i*i (오차 없음)
+
+    //sqrt 쓰면 오차나니까 i*i로 비교. i가 약수면 n/i도 약수
+    for (long long i = 1; i * i <= n; i++) {
         if (n % i == 0) {
             divisors.push_back(i);
+
+            //완전제곱수면 i랑 n/i가 같으니 중복 방지
             if (i != n / i) divisors.push_back(n / i);
         }
     }
+
+    //짝으로 주워서 순서 엉켜있음
     sort(divisors.begin(), divisors.end());
     return divisors;
 }
-// getDivisors(12) → {1, 2, 3, 4, 6, 12}
+//getDivisors(12) → {1, 2, 3, 4, 6, 12}
 ```
 
 ## 5. 이걸 떠올려야 할 때

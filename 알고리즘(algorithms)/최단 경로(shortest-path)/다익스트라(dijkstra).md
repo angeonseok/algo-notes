@@ -29,23 +29,31 @@
 import heapq
 import sys
 
+#시작점 > 모든 정점까지 최단거리 구하기
 def dijkstra(graph, start, V):
     INF = sys.maxsize
     dist = [INF] * (V + 1)
     dist[start] = 0
-    heap = [(0, start)]  # (거리, 노드)
 
-    while heap:
-        cost, node = heapq.heappop(heap)
+    #(거리, 정점) 형태로 힙에 담기
+    pq = [(0, start)]
 
-        if cost > dist[node]:  # 이미 처리된 노드 스킵
+    #다익스트라는 힙을 활용
+    while pq:
+        d, u = heapq.heappop(pq)
+
+        #dist가 최신 정보. d가 더 크면 구버전이니 스킵
+        if d > dist[u]:
             continue
 
-        for neighbor, weight in graph[node]:
-            new_cost = cost + weight
-            if new_cost < dist[neighbor]:
-                dist[neighbor] = new_cost
-                heapq.heappush(heap, (new_cost, neighbor))
+        #거리정보 갱신
+        for v, w in graph[u]:
+            nd = d + w
+
+            #갱신 가능하면 힙에 다시 넣자
+            if nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
 
     return dist
 ```
@@ -56,23 +64,28 @@ vector<long long> dijkstra(vector<vector<pair<int,int>>>& graph, int start, int 
     const long long INF = LLONG_MAX;
     vector<long long> dist(V + 1, INF);
     dist[start] = 0;
-    // 최소 힙: (거리, 노드)
+
+    //(거리, 정점) 최소 힙
     priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<>> pq;
     pq.push({0, start});
 
     while (!pq.empty()) {
-        long long cost = pq.top().first;
-        int node = pq.top().second;
+        long long d = pq.top().first;
+        int u = pq.top().second;
         pq.pop();
 
-        if (cost > dist[node]) continue;   // 이미 처리된 노드 스킵
+        //이미 처리된 노드면 스킵
+        if (d > dist[u]) continue;
 
-        for (auto& e : graph[node]) {      // e = (이웃, 가중치)
-            int next = e.first, weight = e.second;
-            long long nc = cost + weight;
-            if (nc < dist[next]) {
-                dist[next] = nc;
-                pq.push({nc, next});
+        //거리정보 갱신
+        for (auto& e : graph[u]) {
+            int v = e.first, w = e.second;
+            long long nd = d + w;
+
+            //갱신 가능하면 힙에 다시 넣자
+            if (nd < dist[v]) {
+                dist[v] = nd;
+                pq.push({nd, v});
             }
         }
     }
@@ -88,7 +101,9 @@ vector<vector<pair<int,int>>> graph(V + 1);
 for (int i = 0; i < E; i++) {
     int u, v, w;
     cin >> u >> v >> w;
-    graph[u].push_back({v, w});   // 방향 그래프
+
+    //방향 그래프니까 한쪽만
+    graph[u].push_back({v, w});
 }
 ```
 
@@ -96,25 +111,37 @@ for (int i = 0; i < E; i++) {
 
 #### Python
 ```python
+#최단거리뿐만 아니라 실제로 어디를 거쳐갔는지까지 뽑기
 def dijkstra_path(graph, start, end, V):
     INF = sys.maxsize
     dist = [INF] * (V + 1)
+
+    #prev에 직전 노드를 남겨둬야 나중에 거꾸로 되짚음
     prev = [-1] * (V + 1)
     dist[start] = 0
-    heap = [(0, start)]
 
-    while heap:
-        cost, node = heapq.heappop(heap)
-        if cost > dist[node]:
+    #(거리, 정점) 형태로 힙에 담기
+    pq = [(0, start)]
+
+    #다익스트라는 힙을 활용
+    while pq:
+        d, u = heapq.heappop(pq)
+
+        #dist가 최신 정보. d가 더 크면 구버전이니 스킵
+        if d > dist[u]:
             continue
-        for neighbor, weight in graph[node]:
-            new_cost = cost + weight
-            if new_cost < dist[neighbor]:
-                dist[neighbor] = new_cost
-                prev[neighbor] = node
-                heapq.heappush(heap, (new_cost, neighbor))
 
-    # 경로 복원
+        #거리정보 갱신
+        for v, w in graph[u]:
+            nd = d + w
+
+            #갱신 가능하면 힙에 다시 넣고, 누가 갱신했는지도 남기자
+            if nd < dist[v]:
+                dist[v] = nd
+                prev[v] = u
+                heapq.heappush(pq, (nd, v))
+
+    #end에서 prev 타고 start까지 거꾸로 올라가기
     path = []
     cur = end
     while cur != -1:
@@ -125,32 +152,43 @@ def dijkstra_path(graph, start, end, V):
 
 #### C++
 ```cpp
+//최단거리뿐만 아니라 실제로 어디를 거쳐갔는지까지 뽑기
 pair<long long, vector<int>> dijkstraPath(vector<vector<pair<int,int>>>& graph,
                                           int start, int end, int V) {
     const long long INF = LLONG_MAX;
     vector<long long> dist(V + 1, INF);
+
+    //prev에 직전 노드를 남겨둬야 나중에 거꾸로 되짚음
     vector<int> prev(V + 1, -1);
     dist[start] = 0;
+
+    //(거리, 정점) 최소 힙
     priority_queue<pair<long long,int>, vector<pair<long long,int>>, greater<>> pq;
     pq.push({0, start});
 
     while (!pq.empty()) {
-        long long cost = pq.top().first;
-        int node = pq.top().second;
+        long long d = pq.top().first;
+        int u = pq.top().second;
         pq.pop();
-        if (cost > dist[node]) continue;
-        for (auto& e : graph[node]) {
-            int next = e.first, weight = e.second;
-            long long nc = cost + weight;
-            if (nc < dist[next]) {
-                dist[next] = nc;
-                prev[next] = node;
-                pq.push({nc, next});
+
+        //이미 처리된 노드면 스킵
+        if (d > dist[u]) continue;
+
+        //거리정보 갱신
+        for (auto& e : graph[u]) {
+            int v = e.first, w = e.second;
+            long long nd = d + w;
+
+            //갱신 가능하면 힙에 다시 넣고, 누가 갱신했는지도 남기자
+            if (nd < dist[v]) {
+                dist[v] = nd;
+                prev[v] = u;
+                pq.push({nd, v});
             }
         }
     }
 
-    // 경로 복원
+    //end에서 prev 타고 start까지 거꾸로 올라가기
     vector<int> path;
     for (int cur = end; cur != -1; cur = prev[cur])
         path.push_back(cur);

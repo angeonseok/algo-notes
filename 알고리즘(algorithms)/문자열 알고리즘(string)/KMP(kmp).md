@@ -27,35 +27,45 @@
 
 #### Python
 ```python
-def get_failure(pattern):
-    M = len(pattern)
-    failure = [0] * M
+#패턴의 접두사이면서 접미사인 최장 길이를 미리 구해두자
+def get_pi(p):
+    m = len(p)
+    pi = [0] * m
     j = 0
 
-    for i in range(1, M):
-        while j > 0 and pattern[i] != pattern[j]:
-            j = failure[j - 1]  # 이전 실패 함수로 이동
-        if pattern[i] == pattern[j]:
-            j += 1
-            failure[i] = j
+    #pi[0]은 무조건 0이니까 1부터 시작
+    for i in range(1, m):
+        #안 맞으면 처음부터 다시 말고 이전 실패 함수로 점프
+        while j > 0 and p[i] != p[j]:
+            j = pi[j - 1]
 
-    return failure
+        #맞으면 길이 늘려서 박기
+        if p[i] == p[j]:
+            j += 1
+            pi[i] = j
+
+    return pi
 ```
 
 #### C++
 ```cpp
-vector<int> getFailure(const string& pattern) {
-    int M = pattern.size();
-    vector<int> failure(M, 0);
+//패턴의 접두사이면서 접미사인 최장 길이를 미리 구해두자
+vector<int> getPi(const string& p) {
+    int m = p.size();
+    vector<int> pi(m, 0);
     int j = 0;
 
-    for (int i = 1; i < M; i++) {
-        while (j > 0 && pattern[i] != pattern[j])
-            j = failure[j - 1];        // 이전 실패 함수로 이동
-        if (pattern[i] == pattern[j])
-            failure[i] = ++j;
+    //pi[0]은 무조건 0이니까 1부터 시작
+    for (int i = 1; i < m; i++) {
+        //안 맞으면 처음부터 다시 말고 이전 실패 함수로 점프
+        while (j > 0 && p[i] != p[j])
+            j = pi[j - 1];
+
+        //맞으면 길이 늘려서 박기
+        if (p[i] == p[j])
+            pi[i] = ++j;
     }
-    return failure;
+    return pi;
 }
 ```
 
@@ -63,48 +73,67 @@ vector<int> getFailure(const string& pattern) {
 
 #### Python
 ```python
-def kmp(text, pattern):
-    N, M = len(text), len(pattern)
-    failure = get_failure(pattern)
+#s 안에서 p 나오는 시작 위치 전부 모으기
+def kmp(s, p):
+    n, m = len(s), len(p)
+    pi = get_pi(p)
     result = []
     j = 0
 
-    for i in range(N):
-        while j > 0 and text[i] != pattern[j]:
-            j = failure[j - 1]  # 실패 함수로 이동
-        if text[i] == pattern[j]:
+    for i in range(n):
+        #안 맞아도 i는 안 되돌림. j만 실패 함수로 점프
+        while j > 0 and s[i] != p[j]:
+            j = pi[j - 1]
+
+        #맞으면 한 칸 전진
+        if s[i] == p[j]:
             j += 1
-        if j == M:  # 패턴 완전 매칭
-            result.append(i - M + 1)  # 시작 인덱스
-            j = failure[j - 1]        # 다음 탐색 위치
+
+        #j가 m까지 갔으면 패턴 하나 완성
+        if j == m:
+            #찾은 놈의 시작 인덱스 박기
+            result.append(i - m + 1)
+
+            #겹치는 매칭도 잡아야 하니까 실패 함수로 되돌리기
+            j = pi[j - 1]
 
     return result
 
-# 사용
-print(kmp("aabaabaab", "aab"))  # [0, 3, 6]
+#써먹기 > [0, 3, 6] 나옴
+print(kmp("aabaabaab", "aab"))
 ```
 
 #### C++
 ```cpp
-vector<int> kmp(const string& text, const string& pattern) {
-    int N = text.size(), M = pattern.size();
-    vector<int> failure = getFailure(pattern);
+//s 안에서 p 나오는 시작 위치 전부 모으기
+vector<int> kmp(const string& s, const string& p) {
+    int n = s.size(), m = p.size();
+    vector<int> pi = getPi(p);
     vector<int> result;
     int j = 0;
 
-    for (int i = 0; i < N; i++) {
-        while (j > 0 && text[i] != pattern[j])
-            j = failure[j - 1];        // 실패 함수로 이동
-        if (text[i] == pattern[j])
+    for (int i = 0; i < n; i++) {
+        //안 맞아도 i는 안 되돌림. j만 실패 함수로 점프
+        while (j > 0 && s[i] != p[j])
+            j = pi[j - 1];
+
+        //맞으면 한 칸 전진
+        if (s[i] == p[j])
             j++;
-        if (j == M) {                  // 패턴 완전 매칭
-            result.push_back(i - M + 1);   // 시작 인덱스
-            j = failure[j - 1];            // 다음 탐색 위치
+
+        //j가 m까지 갔으면 패턴 하나 완성
+        if (j == m) {
+            //찾은 놈의 시작 인덱스 박기
+            result.push_back(i - m + 1);
+
+            //겹치는 매칭도 잡아야 하니까 실패 함수로 되돌리기
+            j = pi[j - 1];
         }
     }
     return result;
 }
-// kmp("aabaabaab", "aab") → {0, 3, 6}
+
+//kmp("aabaabaab", "aab") → {0, 3, 6}
 ```
 
 ## 5. 실전 패턴
@@ -113,37 +142,52 @@ vector<int> kmp(const string& text, const string& pattern) {
 
 #### Python
 ```python
-def kmp_count(text, pattern):
-    failure = get_failure(pattern)
-    count = 0
+#위치는 필요없고 몇 번 나오는지만 셀 때
+def kmp_count(s, p):
+    pi = get_pi(p)
+    cnt = 0
     j = 0
-    for c in text:
-        while j > 0 and c != pattern[j]:
-            j = failure[j - 1]
-        if c == pattern[j]:
+
+    #인덱스 안 쓰니까 걍 문자만 돌리자
+    for c in s:
+        #안 맞으면 실패 함수로 점프
+        while j > 0 and c != p[j]:
+            j = pi[j - 1]
+
+        if c == p[j]:
             j += 1
-        if j == len(pattern):
-            count += 1
-            j = failure[j - 1]
-    return count
+
+        #하나 찾았으면 세고 바로 되돌리기
+        if j == len(p):
+            cnt += 1
+            j = pi[j - 1]
+
+    return cnt
 ```
 
 #### C++
 ```cpp
-int kmpCount(const string& text, const string& pattern) {
-    vector<int> failure = getFailure(pattern);
-    int M = pattern.size(), count = 0, j = 0;
-    for (char c : text) {
-        while (j > 0 && c != pattern[j])
-            j = failure[j - 1];
-        if (c == pattern[j])
+//위치는 필요없고 몇 번 나오는지만 셀 때
+int kmpCount(const string& s, const string& p) {
+    vector<int> pi = getPi(p);
+    int m = p.size(), cnt = 0, j = 0;
+
+    //인덱스 안 쓰니까 걍 문자만 돌리자
+    for (char c : s) {
+        //안 맞으면 실패 함수로 점프
+        while (j > 0 && c != p[j])
+            j = pi[j - 1];
+
+        if (c == p[j])
             j++;
-        if (j == M) {
-            count++;
-            j = failure[j - 1];
+
+        //하나 찾았으면 세고 바로 되돌리기
+        if (j == m) {
+            cnt++;
+            j = pi[j - 1];
         }
     }
-    return count;
+    return cnt;
 }
 ```
 
@@ -151,23 +195,37 @@ int kmpCount(const string& text, const string& pattern) {
 
 #### Python
 ```python
+#s가 어떤 조각의 반복인지, 그 조각 길이 구하기
 def string_period(s):
-    failure = get_failure(s)
+    pi = get_pi(s)
     n = len(s)
-    period = n - failure[n - 1]
+
+    #전체 길이 - 최장 접두접미 = 한 주기 길이
+    period = n - pi[n - 1]
+
+    #딱 나눠떨어져야 진짜 반복. s는 길이 period짜리의 반복
     if n % period == 0:
-        return period  # s는 길이 period인 문자열의 반복
-    return n           # 주기 없음
+        return period
+
+    #안 나눠떨어지면 주기 없음
+    return n
 ```
 
 #### C++
 ```cpp
+//s가 어떤 조각의 반복인지, 그 조각 길이 구하기
 int stringPeriod(const string& s) {
-    vector<int> failure = getFailure(s);
+    vector<int> pi = getPi(s);
     int n = s.size();
-    int period = n - failure[n - 1];
-    if (n % period == 0) return period;   // 길이 period 문자열의 반복
-    return n;                             // 주기 없음
+
+    //전체 길이 - 최장 접두접미 = 한 주기 길이
+    int period = n - pi[n - 1];
+
+    //딱 나눠떨어져야 진짜 반복. 길이 period짜리의 반복
+    if (n % period == 0) return period;
+
+    //안 나눠떨어지면 주기 없음
+    return n;
 }
 ```
 

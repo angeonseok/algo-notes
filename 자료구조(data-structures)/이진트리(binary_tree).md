@@ -52,8 +52,11 @@ struct TreeNode {
 #### Python
 ```python
 def insert(root, val):
+    #빈 자리 만나면 거기다 새 노드 박기
     if not root:
         return TreeNode(val)
+
+    #작으면 왼쪽, 크거나 같으면 오른쪽으로 내려보내자
     if val < root.val:
         root.left = insert(root.left, val)
     else:
@@ -64,7 +67,10 @@ def insert(root, val):
 #### C++
 ```cpp
 TreeNode* insert(TreeNode* root, int val) {
+    //빈 자리 만나면 거기다 새 노드 박기
     if (!root) return new TreeNode(val);
+
+    //작으면 왼쪽, 크거나 같으면 오른쪽으로 내려보내자
     if (val < root->val) root->left = insert(root->left, val);
     else                 root->right = insert(root->right, val);
     return root;
@@ -76,10 +82,15 @@ TreeNode* insert(TreeNode* root, int val) {
 #### Python
 ```python
 def search(root, val):
+    #끝까지 갔는데 못 찾으면 없는 거
     if not root:
         return False
+
+    #찾으면 바로 True
     if root.val == val:
         return True
+
+    #작으면 왼쪽, 크면 오른쪽만 보면 되니까 반씩 쳐냄
     if val < root.val:
         return search(root.left, val)
     return search(root.right, val)
@@ -88,8 +99,13 @@ def search(root, val):
 #### C++
 ```cpp
 bool search(TreeNode* root, int val) {
+    //끝까지 갔는데 못 찾으면 없는 거
     if (!root) return false;
+
+    //찾으면 바로 true
     if (root->val == val) return true;
+
+    //작으면 왼쪽, 크면 오른쪽만 보면 되니까 반씩 쳐냄
     if (val < root->val) return search(root->left, val);
     return search(root->right, val);
 }
@@ -100,19 +116,23 @@ bool search(TreeNode* root, int val) {
 #### Python
 ```python
 def delete(root, val):
+    #없는 값이면 걍 스킵
     if not root:
         return None
+
+    #지울 놈 찾을 때까지 작으면 왼쪽, 크면 오른쪽으로 내려가자
     if val < root.val:
         root.left = delete(root.left, val)
     elif val > root.val:
         root.right = delete(root.right, val)
     else:
-        # 자식이 하나이거나 없는 경우
+        #자식이 하나 이하면 있는 자식을 걍 끌어올리면 끝
         if not root.left:
             return root.right
         if not root.right:
             return root.left
-        # 자식이 둘 → 오른쪽 서브트리의 최솟값으로 대체
+
+        #자식이 둘이면 오른쪽 서브트리 최솟값으로 값만 갈아끼우고, 그 최솟값을 아래서 지우자
         min_node = root.right
         while min_node.left:
             min_node = min_node.left
@@ -123,15 +143,20 @@ def delete(root, val):
 
 #### C++
 ```cpp
-TreeNode* deleteNode(TreeNode* root, int val) {   // delete는 예약어라 deleteNode
+//delete는 예약어라 deleteNode로
+TreeNode* deleteNode(TreeNode* root, int val) {
+    //없는 값이면 걍 스킵
     if (!root) return nullptr;
+
+    //지울 놈 찾을 때까지 작으면 왼쪽, 크면 오른쪽으로 내려가자
     if (val < root->val)      root->left = deleteNode(root->left, val);
     else if (val > root->val) root->right = deleteNode(root->right, val);
     else {
-        // 자식이 하나이거나 없는 경우
+        //자식이 하나 이하면 있는 자식을 걍 끌어올리면 끝
         if (!root->left)  return root->right;
         if (!root->right) return root->left;
-        // 자식이 둘 → 오른쪽 서브트리의 최솟값으로 대체
+
+        //자식이 둘이면 오른쪽 서브트리 최솟값으로 값만 갈아끼우고, 그 최솟값을 아래서 지우자
         TreeNode* minNode = root->right;
         while (minNode->left) minNode = minNode->left;
         root->val = minNode->val;
@@ -147,37 +172,47 @@ TreeNode* deleteNode(TreeNode* root, int val) {   // delete는 예약어라 dele
 
 #### Python
 ```python
-# 정렬된 리스트가 필요할 때
+#정렬된 리스트만 있으면 될 때는 bisect로 충분
 import bisect
 arr = []
-bisect.insort(arr, val)             # 정렬 유지하며 삽입 O(n)
-idx = bisect.bisect_left(arr, val)  # 위치 탐색 O(log n)
 
-# 더 빠른 삽입/삭제가 필요할 때
+#삽입은 밀어야 되니까 O(n)이지만 위치 탐색 자체는 O(log n)
+bisect.insort(arr, val)
+idx = bisect.bisect_left(arr, val)
+
+#삽입/삭제가 많으면 SortedList가 나음
 from sortedcontainers import SortedList
 sl = SortedList()
 sl.add(val)
 sl.remove(val)
-sl[0]   # 최솟값
-sl[-1]  # 최댓값
+
+#앞이 최솟값, 뒤가 최댓값
+sl[0]
+sl[-1]
 ```
 
 #### C++
 ```cpp
-// C++은 std::set/std::map이 균형 BST(레드블랙트리) → 삽입/삭제/탐색 O(log n)
+//C++은 set/map이 곧 균형 BST(레드블랙트리)라 삽입/삭제/탐색 다 O(log n)
 set<int> s;
 s.insert(val);
 s.erase(val);
-*s.begin();            // 최솟값
-*s.rbegin();           // 최댓값
-s.lower_bound(val);    // val 이상인 첫 원소 (반복자)
-// 중복 허용이 필요하면 multiset
+
+//앞이 최솟값, 뒤가 최댓값
+*s.begin();
+*s.rbegin();
+
+//val 이상인 첫 원소 반복자
+s.lower_bound(val);
+
+//중복 허용이 필요하면 multiset 쓰자
 ```
 
 ### 트리 높이 구하기
 
 #### Python
 ```python
+#자식 둘 중 더 깊은 쪽에 자기 자신 한 층 더하기
 def height(root):
     if not root:
         return 0
@@ -186,6 +221,7 @@ def height(root):
 
 #### C++
 ```cpp
+//자식 둘 중 더 깊은 쪽에 자기 자신 한 층 더하기
 int height(TreeNode* root) {
     if (!root) return 0;
     return 1 + max(height(root->left), height(root->right));
@@ -196,20 +232,30 @@ int height(TreeNode* root) {
 
 #### Python
 ```python
+#내려가면서 각 노드가 들어갈 수 있는 (min, max) 범위를 좁혀가며 검사하자
 def is_bst(node, min_val=float('-inf'), max_val=float('inf')):
     if not node:
         return True
+
+    #허용 범위 벗어나면 BST 아님
     if not (min_val < node.val < max_val):
         return False
+
+    #왼쪽은 상한을 현재 값으로, 오른쪽은 하한을 현재 값으로 조여줌
     return (is_bst(node.left, min_val, node.val) and
             is_bst(node.right, node.val, max_val))
 ```
 
 #### C++
 ```cpp
+//내려가면서 각 노드가 들어갈 수 있는 (min, max) 범위를 좁혀가며 검사하자
 bool isBST(TreeNode* node, long long minVal = LLONG_MIN, long long maxVal = LLONG_MAX) {
     if (!node) return true;
+
+    //허용 범위 벗어나면 BST 아님
     if (!(minVal < node->val && node->val < maxVal)) return false;
+
+    //왼쪽은 상한을 현재 값으로, 오른쪽은 하한을 현재 값으로 조여줌
     return isBST(node->left,  minVal, node->val)
         && isBST(node->right, node->val, maxVal);
 }

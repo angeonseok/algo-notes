@@ -28,21 +28,23 @@
 ```python
 import sys
 
+#음수 가중치 있어도 최단거리 구하기
 def bellman_ford(edges, start, V):
     INF = sys.maxsize
     dist = [INF] * (V + 1)
     dist[start] = 0
 
-    # V-1번 반복
+    #최단경로는 간선 V-1개를 넘을 수 없으니까 V-1번만 돌리자
     for _ in range(V - 1):
+        #모든 간선 훑으면서 갱신 가능하면 갱신
         for u, v, w in edges:
             if dist[u] != INF and dist[u] + w < dist[v]:
                 dist[v] = dist[u] + w
 
-    # 음수 사이클 감지
+    #V번째에도 또 줄어들면 음수 사이클 있는 거니까 None 박기
     for u, v, w in edges:
         if dist[u] != INF and dist[u] + w < dist[v]:
-            return None  # 음수 사이클 존재
+            return None
 
     return dist
 ```
@@ -51,22 +53,22 @@ def bellman_ford(edges, start, V):
 ```cpp
 struct Edge { int u, v, w; };
 
-// dist 반환, 음수 사이클이면 빈 벡터 반환
+//음수 가중치 있어도 최단거리 구하기. 음수 사이클이면 빈 벡터 반환
 vector<long long> bellmanFord(vector<Edge>& edges, int start, int V) {
     const long long INF = LLONG_MAX;
     vector<long long> dist(V + 1, INF);
     dist[start] = 0;
 
-    // V-1번 완화
+    //최단경로는 간선 V-1개를 넘을 수 없으니까 V-1번만 돌리자
     for (int iter = 0; iter < V - 1; iter++)
         for (auto& e : edges)
             if (dist[e.u] != INF && dist[e.u] + e.w < dist[e.v])
                 dist[e.v] = dist[e.u] + e.w;
 
-    // 음수 사이클 감지 (V번째에도 완화되면 존재)
+    //V번째에도 또 줄어들면 음수 사이클 있는 거니까 빈 벡터 박기
     for (auto& e : edges)
         if (dist[e.u] != INF && dist[e.u] + e.w < dist[e.v])
-            return {};   // 음수 사이클 존재
+            return {};
 
     return dist;
 }

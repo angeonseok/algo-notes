@@ -30,17 +30,17 @@
 ```python
 stack = []
 
-# push
+#push
 stack.append(1)
 stack.append(2)
 
-# pop
+#pop
 top = stack.pop()
 
-# top 확인
+#top은 맨 뒤 원소
 top = stack[-1]
 
-# empty 체크
+#empty 체크
 if not stack:
     print("empty")
 ```
@@ -49,17 +49,17 @@ if not stack:
 ```cpp
 stack<int> st;
 
-// push
+//push
 st.push(1);
 st.push(2);
 
-// top 확인 + pop  (주의: C++ pop()은 값을 반환하지 않는다!)
+//C++ pop()은 값을 반환 안 하니까 top()으로 먼저 읽고 pop 하자
 int top = st.top();
 st.pop();
 
-// empty 체크
+//empty 체크
 if (st.empty()) {
-    // empty
+    //empty
 }
 ```
 
@@ -71,12 +71,17 @@ if (st.empty()) {
 ```python
 stack = []
 for c in s:
+    #여는 괄호는 일단 쌓기
     if c == '(':
         stack.append(c)
+
+    #닫는 괄호인데 짝지을 게 없으면 아웃, 있으면 하나 빼기
     elif c == ')':
         if not stack:
             return False
         stack.pop()
+
+#끝까지 봤는데 남아있으면 짝 안 맞는 거
 return not stack
 ```
 
@@ -85,13 +90,18 @@ return not stack
 bool isValid(const string& s) {
     stack<char> st;
     for (char c : s) {
+        //여는 괄호는 일단 쌓기
         if (c == '(') {
             st.push(c);
+
+        //닫는 괄호인데 짝지을 게 없으면 아웃, 있으면 하나 빼기
         } else if (c == ')') {
             if (st.empty()) return false;
             st.pop();
         }
     }
+
+    //끝까지 봤는데 남아있으면 짝 안 맞는 거
     return st.empty();
 }
 ```
@@ -104,19 +114,23 @@ bool isValid(const string& s) {
 ```python
 stack = []
 for i, v in enumerate(arr):
+    #스택 top보다 현재 값이 크면, 걔의 오큰수가 지금 확정됨
     while stack and arr[stack[-1]] < v:
         idx = stack.pop()
-        # arr[idx]의 오른쪽 첫 번째 큰 수 = v
+        #arr[idx]의 오른쪽 첫 번째 큰 수 = v
+
     stack.append(i)
 ```
 
 #### C++
 ```cpp
-stack<int> st;   // 인덱스 저장
+//값 말고 인덱스를 담자
+stack<int> st;
 for (int i = 0; i < (int)arr.size(); i++) {
+    //스택 top보다 현재 값이 크면, 걔의 오큰수가 지금 확정됨
     while (!st.empty() && arr[st.top()] < arr[i]) {
         int idx = st.top(); st.pop();
-        // arr[idx]의 오른쪽 첫 번째 큰 수 = arr[i]
+        //arr[idx]의 오른쪽 첫 번째 큰 수 = arr[i]
     }
     st.push(i);
 }
@@ -130,24 +144,34 @@ stack = [start]
 visited = set()
 while stack:
     node = stack.pop()
+
+    #이미 방문한 놈이면 스킵
     if node in visited:
         continue
     visited.add(node)
-    for neighbor in graph[node]:
-        stack.append(neighbor)
+
+    #이웃들 다 쌓아두면 나중에 하나씩 꺼내지면서 파고 들어감
+    for v in graph[node]:
+        stack.append(v)
 ```
 
 #### C++
 ```cpp
 stack<int> st;
 st.push(start);
-vector<bool> visited(n, false);   // 노드 수 n
+
+//노드 수 n
+vector<bool> visited(n, false);
 while (!st.empty()) {
     int node = st.top(); st.pop();
+
+    //이미 방문한 놈이면 스킵
     if (visited[node]) continue;
     visited[node] = true;
-    for (int next : graph[node])
-        st.push(next);
+
+    //이웃들 다 쌓아두면 나중에 하나씩 꺼내지면서 파고 들어감
+    for (int v : graph[node])
+        st.push(v);
 }
 ```
 

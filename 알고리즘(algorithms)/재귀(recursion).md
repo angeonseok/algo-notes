@@ -30,13 +30,14 @@
 #### Python
 ```python
 def recursive(n):
-    # 기저 조건
+    #기저 조건. 이게 없으면 무한으로 내려감
     if n <= 0:
         return 0
-    # 재귀 조건
+
+    #재귀 조건. 나보다 작은 문제한테 넘기고 결과 받아쓰기
     return n + recursive(n - 1)
 
-# 재귀 제한 설정
+#파이썬 기본 재귀 제한이 1000이라 깊게 들어가면 터짐. 늘려두자
 import sys
 sys.setrecursionlimit(100000)
 ```
@@ -44,11 +45,15 @@ sys.setrecursionlimit(100000)
 #### C++
 ```cpp
 int recursive(int n) {
-    if (n <= 0) return 0;          // 기저 조건
-    return n + recursive(n - 1);   // 재귀 조건
+    //기저 조건. 이게 없으면 무한으로 내려감
+    if (n <= 0) return 0;
+
+    //재귀 조건. 나보다 작은 문제한테 넘기고 결과 받아쓰기
+    return n + recursive(n - 1);
 }
-// C++엔 setrecursionlimit이 없다. 재귀가 매우 깊으면
-// 컴파일/실행 시 스택 크기를 늘리거나 반복문으로 변환한다.
+
+//C++엔 setrecursionlimit 같은 게 없음
+//너무 깊으면 컴파일/실행 시 스택 크기를 늘리거나 반복문으로 바꾸자
 ```
 
 ### 팩토리얼
@@ -56,15 +61,21 @@ int recursive(int n) {
 #### Python
 ```python
 def factorial(n):
-    if n <= 1:      # 기저 조건
+    #기저 조건. 0!이든 1!이든 1
+    if n <= 1:
         return 1
+
+    #n * (n-1)! 로 쪼개기
     return n * factorial(n - 1)
 ```
 
 #### C++
 ```cpp
 long long factorial(int n) {
-    if (n <= 1) return 1;                    // 기저 조건
+    //기저 조건. 0!이든 1!이든 1
+    if (n <= 1) return 1;
+
+    //n * (n-1)! 로 쪼개기. 금방 커지니까 long long
     return (long long)n * factorial(n - 1);
 }
 ```
@@ -75,20 +86,30 @@ long long factorial(int n) {
 ```python
 from functools import lru_cache
 
+#lru_cache 붙이면 같은 n 두 번 계산 안 함. 걍 이걸로 메모이제이션 퉁치자
 @lru_cache(maxsize=None)
 def fib(n):
+    #0, 1은 그대로 반환
     if n <= 1:
         return n
+
+    #앞 두 개 더하기
     return fib(n - 1) + fib(n - 2)
 ```
 
 #### C++
 ```cpp
-vector<long long> memo(100001, -1);   // -1 = 미계산
+//-1로 채워두고 아직 계산 안 한 표시로 씀
+vector<long long> memo(100001, -1);
 
 long long fib(int n) {
+    //0, 1은 그대로 반환
     if (n <= 1) return n;
+
+    //이미 계산해둔 거면 재활용
     if (memo[n] != -1) return memo[n];
+
+    //계산하면서 memo에 박아두기
     return memo[n] = fib(n - 1) + fib(n - 2);
 }
 ```
@@ -97,25 +118,41 @@ long long fib(int n) {
 
 #### Python
 ```python
-def divide_and_conquer(arr, lo, hi):
-    if lo >= hi:    # 기저 조건
+def divide_and_conquer(arr, l, h):
+    #원소 하나 남으면 더 쪼갤 거 없음 (기저 조건)
+    if l >= h:
         return
 
-    mid = (lo + hi) // 2
-    divide_and_conquer(arr, lo, mid)      # 왼쪽 절반
-    divide_and_conquer(arr, mid + 1, hi)  # 오른쪽 절반
-    merge(arr, lo, mid, hi)               # 합치기
+    #반으로 가르기
+    mid = (l + h) // 2
+
+    #왼쪽 먼저 정렬
+    divide_and_conquer(arr, l, mid)
+
+    #오른쪽도 정렬
+    divide_and_conquer(arr, mid + 1, h)
+
+    #둘 다 정렬됐으니 합치기
+    merge(arr, l, mid, h)
 ```
 
 #### C++
 ```cpp
-void divideAndConquer(vector<int>& arr, int lo, int hi) {
-    if (lo >= hi) return;                   // 기저 조건
+void divideAndConquer(vector<int>& arr, int l, int h) {
+    //원소 하나 남으면 더 쪼갤 거 없음 (기저 조건)
+    if (l >= h) return;
 
-    int mid = (lo + hi) / 2;
-    divideAndConquer(arr, lo, mid);         // 왼쪽 절반
-    divideAndConquer(arr, mid + 1, hi);     // 오른쪽 절반
-    // merge(arr, lo, mid, hi);             // 합치기
+    //반으로 가르기
+    int mid = (l + h) / 2;
+
+    //왼쪽 먼저 정렬
+    divideAndConquer(arr, l, mid);
+
+    //오른쪽도 정렬
+    divideAndConquer(arr, mid + 1, h);
+
+    //둘 다 정렬됐으니 합치기
+    //merge(arr, l, mid, h);
 }
 ```
 
@@ -126,21 +163,31 @@ void divideAndConquer(vector<int>& arr, int lo, int hi) {
 #### Python
 ```python
 def dfs(node):
+    #빈 노드까지 내려왔으면 높이 0
     if not node:
         return 0
+
+    #양쪽 자식 높이 먼저 재고
     left  = dfs(node.left)
     right = dfs(node.right)
-    return 1 + max(left, right)  # 트리 높이
+
+    #더 깊은 쪽 + 나 자신 한 칸 = 트리 높이
+    return 1 + max(left, right)
 ```
 
 #### C++
 ```cpp
-// struct TreeNode { int val; TreeNode *left, *right; };
+//struct TreeNode { int val; TreeNode *left, *right; };
 int dfs(TreeNode* node) {
+    //빈 노드까지 내려왔으면 높이 0
     if (!node) return 0;
+
+    //양쪽 자식 높이 먼저 재고
     int left  = dfs(node->left);
     int right = dfs(node->right);
-    return 1 + max(left, right);   // 트리 높이
+
+    //더 깊은 쪽 + 나 자신 한 칸 = 트리 높이
+    return 1 + max(left, right);
 }
 ```
 
@@ -149,22 +196,32 @@ int dfs(TreeNode* node) {
 #### Python
 ```python
 def power(base, exp):
+    #0제곱은 1
     if exp == 0:
         return 1
+
+    #짝수면 반만 구해서 제곱 > 한 번에 반토막
     if exp % 2 == 0:
         half = power(base, exp // 2)
         return half * half
+
+    #홀수면 하나 떼서 짝수로 만들기
     return base * power(base, exp - 1)
 ```
 
 #### C++
 ```cpp
 long long power(long long base, int exp) {
+    //0제곱은 1
     if (exp == 0) return 1;
+
+    //짝수면 반만 구해서 제곱 > 한 번에 반토막
     if (exp % 2 == 0) {
         long long half = power(base, exp / 2);
         return half * half;
     }
+
+    //홀수면 하나 떼서 짝수로 만들기
     return base * power(base, exp - 1);
 }
 ```

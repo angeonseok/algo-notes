@@ -30,28 +30,31 @@
 ```python
 import sys
 
+#모든 정점 쌍 최단거리를 한방에 구하기
 def floyd_warshall(V, edges):
-    INF = sys.maxsize // 2  # 오버플로 방지
+    #INF + INF 해도 안 넘치게 반으로 잘라놓기
+    INF = sys.maxsize // 2
     dist = [[INF] * (V + 1) for _ in range(V + 1)]
 
-    # 자기 자신은 0
+    #자기 자신으로 가는 건 걍 0
     for i in range(V + 1):
         dist[i][i] = 0
 
-    # 간선 초기화
+    #같은 u-v 간선이 여러개면 제일 싼 놈만 남기자
     for u, v, w in edges:
-        dist[u][v] = min(dist[u][v], w)  # 중복 간선 처리
+        dist[u][v] = min(dist[u][v], w)
 
-    # 플로이드 워셜
-    for k in range(1, V + 1):       # 경유지
-        for i in range(1, V + 1):   # 출발
-            for j in range(1, V + 1):  # 도착
+    #k(경유지)를 거쳐가는 게 더 싸면 갈아타기. k가 제일 바깥이어야 함
+    for k in range(1, V + 1):
+        #i는 출발, j는 도착
+        for i in range(1, V + 1):
+            for j in range(1, V + 1):
                 if dist[i][k] + dist[k][j] < dist[i][j]:
                     dist[i][j] = dist[i][k] + dist[k][j]
 
     return dist
 
-# 음수 사이클 감지
+#자기한테 돌아왔는데 0보다 작으면 음수 사이클
 def has_negative_cycle(dist, V):
     for i in range(1, V + 1):
         if dist[i][i] < 0:
@@ -61,20 +64,25 @@ def has_negative_cycle(dist, V):
 
 #### C++
 ```cpp
-const long long INF = 1e18;   // 오버플로 방지 (INF+INF가 넘치지 않게)
+//INF + INF 해도 안 넘치는 크기로 잡기
+const long long INF = 1e18;
 
+//모든 정점 쌍 최단거리를 한방에 구하기
 vector<vector<long long>> floydWarshall(int V, vector<array<int,3>>& edges) {
     vector<vector<long long>> dist(V + 1, vector<long long>(V + 1, INF));
 
-    for (int i = 0; i <= V; i++) dist[i][i] = 0;   // 자기 자신은 0
+    //자기 자신으로 가는 건 걍 0
+    for (int i = 0; i <= V; i++) dist[i][i] = 0;
 
-    for (auto& e : edges)                          // 간선 초기화 (중복은 최솟값)
+    //같은 간선이 여러개면 제일 싼 놈만 남기자
+    for (auto& e : edges)
         dist[e[0]][e[1]] = min<long long>(dist[e[0]][e[1]], e[2]);
 
-    // 플로이드 워셜
-    for (int k = 1; k <= V; k++)          // 경유지
-        for (int i = 1; i <= V; i++)      // 출발
-            for (int j = 1; j <= V; j++)  // 도착
+    //k(경유지)를 거쳐가는 게 더 싸면 갈아타기. k가 제일 바깥이어야 함
+    //i는 출발, j는 도착
+    for (int k = 1; k <= V; k++)
+        for (int i = 1; i <= V; i++)
+            for (int j = 1; j <= V; j++)
                 if (dist[i][k] != INF && dist[k][j] != INF &&
                     dist[i][k] + dist[k][j] < dist[i][j])
                     dist[i][j] = dist[i][k] + dist[k][j];
@@ -82,7 +90,7 @@ vector<vector<long long>> floydWarshall(int V, vector<array<int,3>>& edges) {
     return dist;
 }
 
-// 음수 사이클 감지
+//자기한테 돌아왔는데 0보다 작으면 음수 사이클
 bool hasNegativeCycle(vector<vector<long long>>& dist, int V) {
     for (int i = 1; i <= V; i++)
         if (dist[i][i] < 0) return true;

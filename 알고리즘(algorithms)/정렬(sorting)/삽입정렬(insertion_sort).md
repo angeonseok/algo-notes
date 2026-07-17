@@ -30,28 +30,40 @@
 
 #### Python
 ```python
+#카드 정렬하듯 앞쪽 정렬된 구간에 하나씩 끼워넣기
 def insertion_sort(arr):
+    #0번은 이미 정렬된 셈이니까 1번부터 시작
     for i in range(1, len(arr)):
         key = arr[i]
         j = i - 1
+
+        #key보다 큰 놈들은 한 칸씩 오른쪽으로 밀기
         while j >= 0 and arr[j] > key:
-            arr[j + 1] = arr[j]  # 한 칸씩 오른쪽으로 밀기
+            arr[j + 1] = arr[j]
             j -= 1
-        arr[j + 1] = key  # 적절한 위치에 삽입
+
+        #while이 멈춘 자리가 key 들어갈 자리
+        arr[j + 1] = key
     return arr
 ```
 
 #### C++
 ```cpp
+//카드 정렬하듯 앞쪽 정렬된 구간에 하나씩 끼워넣기
 void insertionSort(vector<int>& arr) {
+    //0번은 이미 정렬된 셈이니까 1번부터 시작
     for (int i = 1; i < (int)arr.size(); i++) {
         int key = arr[i];
         int j = i - 1;
+
+        //key보다 큰 놈들은 한 칸씩 오른쪽으로 밀기
         while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];   // 한 칸씩 오른쪽으로 밀기
+            arr[j + 1] = arr[j];
             j--;
         }
-        arr[j + 1] = key;          // 적절한 위치에 삽입
+
+        //while이 멈춘 자리가 key 들어갈 자리
+        arr[j + 1] = key;
     }
 }
 ```
@@ -62,21 +74,31 @@ void insertionSort(vector<int>& arr) {
 ```python
 import bisect
 
+#끼워넣을 자리를 이분 탐색으로 찾기
 def insertion_sort_bisect(arr):
     result = []
+
+    #result는 항상 정렬된 상태니까 bisect 쓸 수 있음
     for v in arr:
         idx = bisect.bisect_left(result, v)
-        result.insert(idx, v)  # insert 자체가 O(n)이라 전체는 O(n²)
+
+        #자리는 O(log n)에 찾아도 insert 자체가 O(n)이라 전체는 그대로 O(n²)
+        result.insert(idx, v)
     return result
 ```
 
 #### C++
 ```cpp
+//끼워넣을 자리를 이분 탐색으로 찾기
 vector<int> insertionSortBisect(vector<int>& arr) {
     vector<int> result;
+
+    //result는 항상 정렬된 상태니까 lower_bound 쓸 수 있음
     for (int v : arr) {
         auto it = lower_bound(result.begin(), result.end(), v);
-        result.insert(it, v);   // insert 자체가 O(n) → 전체는 O(n²)
+
+        //자리는 O(log n)에 찾아도 insert 자체가 O(n)이라 전체는 그대로 O(n²)
+        result.insert(it, v);
     }
     return result;
 }

@@ -32,28 +32,36 @@
 
 #### Python
 ```python
-N = 3
+n = 3
 arr = ['a', 'b', 'c']
 
-for mask in range(1 << N):  # 0 ~ 2^N - 1
+#0 ~ 2^n - 1 돌리면 부분집합 전부 나옴
+for mask in range(1 << n):
     subset = []
-    for i in range(N):
+
+    #켜져 있는 비트 자리의 원소만 주워담기
+    for i in range(n):
         if mask & (1 << i):
             subset.append(arr[i])
+
     print(subset)
 ```
 
 #### C++
 ```cpp
-int N = 3;
+int n = 3;
 vector<char> arr = {'a', 'b', 'c'};
 
-for (int mask = 0; mask < (1 << N); mask++) {   // 0 ~ 2^N - 1
+//0 ~ 2^n - 1 돌리면 부분집합 전부 나옴
+for (int mask = 0; mask < (1 << n); mask++) {
     vector<char> subset;
-    for (int i = 0; i < N; i++)
+
+    //켜져 있는 비트 자리의 원소만 주워담기
+    for (int i = 0; i < n; i++)
         if (mask & (1 << i))
             subset.push_back(arr[i]);
-    // subset 사용
+
+    //subset 사용
 }
 ```
 
@@ -61,31 +69,41 @@ for (int mask = 0; mask < (1 << N); mask++) {   // 0 ~ 2^N - 1
 
 #### Python
 ```python
-mask = 0b0000  # 아무것도 없는 상태
+#아무것도 없는 상태에서 시작
+mask = 0b0000
 
-mask |= (1 << 0)   # 0번 추가 → 0001
-mask |= (1 << 2)   # 2번 추가 → 0101
+#OR로 켜기 > 0001, 0101
+mask |= (1 << 0)
+mask |= (1 << 2)
 
+#AND 걸어서 0 아니면 들어있는 놈
 if mask & (1 << 0):
     print("0번 포함")
 
-mask &= ~(1 << 2)  # 2번 제거 → 0001
+#반전시켜서 AND = 그 자리만 끄기 > 0001
+mask &= ~(1 << 2)
 
-print(bin(mask).count('1'))  # 1
+#켜진 비트 세기 > 1
+print(bin(mask).count('1'))
 ```
 
 #### C++
 ```cpp
-int mask = 0b0000;   // 아무것도 없는 상태
+//아무것도 없는 상태에서 시작
+int mask = 0b0000;
 
-mask |= (1 << 0);    // 0번 추가 → 0001
-mask |= (1 << 2);    // 2번 추가 → 0101
+//OR로 켜기 > 0001, 0101
+mask |= (1 << 0);
+mask |= (1 << 2);
 
+//AND 걸어서 0 아니면 들어있는 놈
 if (mask & (1 << 0)) { /* 0번 포함 */ }
 
-mask &= ~(1 << 2);   // 2번 제거 → 0001
+//반전시켜서 AND = 그 자리만 끄기 > 0001
+mask &= ~(1 << 2);
 
-int cnt = __builtin_popcount(mask);   // 포함된 원소 수 = 1
+//켜진 비트 세기 > 1
+int cnt = __builtin_popcount(mask);
 ```
 
 ## 5. 실전 패턴
@@ -96,56 +114,88 @@ int cnt = __builtin_popcount(mask);   // 포함된 원소 수 = 1
 ```python
 import sys
 
-def tsp(graph, N):
+#모든 도시 한 번씩 돌고 시작점으로 돌아오는 최소 비용
+def tsp(graph, n):
     INF = sys.maxsize
-    # dp[mask][i] = mask 상태에서 i번 도시에 있을 때 최소 비용
-    dp = [[INF] * N for _ in range(1 << N)]
-    dp[1][0] = 0  # 0번 도시에서 시작
 
-    for mask in range(1 << N):
-        for v in range(N):
+    #dp[mask][i] = mask 상태에서 i번 도시에 있을 때 최소 비용
+    dp = [[INF] * n for _ in range(1 << n)]
+
+    #0번 도시에서 시작하니까 0번만 켜진 mask = 1
+    dp[1][0] = 0
+
+    #방문 상태를 작은 놈부터 채워나가자
+    for mask in range(1 << n):
+        for v in range(n):
+            #아직 도달 못한 상태니까 스킵
             if dp[mask][v] == INF:
                 continue
+
+            #v에 서있으려면 mask에 v가 켜져 있어야 말이 됨
             if not (mask & (1 << v)):
                 continue
-            for next_v in range(N):
-                if mask & (1 << next_v):  # 이미 방문
+
+            #v에서 갈 수 있는 다음 도시 찾기
+            for next_v in range(n):
+                #이미 방문한 놈이니까 스킵
+                if mask & (1 << next_v):
                     continue
-                if graph[v][next_v] == 0:  # 간선 없음
+
+                #간선 없으면 못 가니까 스킵
+                if graph[v][next_v] == 0:
                     continue
+
+                #next_v 켜서 다음 상태로 넘기기
                 new_mask = mask | (1 << next_v)
                 dp[new_mask][next_v] = min(
                     dp[new_mask][next_v],
                     dp[mask][v] + graph[v][next_v]
                 )
 
-    full = (1 << N) - 1
-    return min(dp[full][i] + graph[i][0] for i in range(N) if graph[i][0])
+    #전부 켜진 상태에서 0번으로 돌아오는 비용까지 더한 게 답
+    full = (1 << n) - 1
+    return min(dp[full][i] + graph[i][0] for i in range(n) if graph[i][0])
 ```
 
 #### C++
 ```cpp
-int tsp(vector<vector<int>>& graph, int N) {
+//모든 도시 한 번씩 돌고 시작점으로 돌아오는 최소 비용
+int tsp(vector<vector<int>>& graph, int n) {
     const int INF = INT_MAX;
-    // dp[mask][i] = mask 상태에서 i번 도시에 있을 때 최소 비용
-    vector<vector<int>> dp(1 << N, vector<int>(N, INF));
-    dp[1][0] = 0;   // 0번 도시에서 시작
 
-    for (int mask = 0; mask < (1 << N); mask++)
-        for (int v = 0; v < N; v++) {
+    //dp[mask][i] = mask 상태에서 i번 도시에 있을 때 최소 비용
+    vector<vector<int>> dp(1 << n, vector<int>(n, INF));
+
+    //0번 도시에서 시작하니까 0번만 켜진 mask = 1
+    dp[1][0] = 0;
+
+    //방문 상태를 작은 놈부터 채워나가자
+    for (int mask = 0; mask < (1 << n); mask++)
+        for (int v = 0; v < n; v++) {
+            //아직 도달 못한 상태니까 스킵
             if (dp[mask][v] == INF) continue;
+
+            //v에 서있으려면 mask에 v가 켜져 있어야 말이 됨
             if (!(mask & (1 << v))) continue;
-            for (int next_v = 0; next_v < N; next_v++) {
-                if (mask & (1 << next_v)) continue;    // 이미 방문
-                if (graph[v][next_v] == 0) continue;   // 간선 없음
+
+            //v에서 갈 수 있는 다음 도시 찾기
+            for (int next_v = 0; next_v < n; next_v++) {
+                //이미 방문한 놈이니까 스킵
+                if (mask & (1 << next_v)) continue;
+
+                //간선 없으면 못 가니까 스킵
+                if (graph[v][next_v] == 0) continue;
+
+                //next_v 켜서 다음 상태로 넘기기
                 int new_mask = mask | (1 << next_v);
                 dp[new_mask][next_v] = min(dp[new_mask][next_v],
                                            dp[mask][v] + graph[v][next_v]);
             }
         }
 
-    int full = (1 << N) - 1, ans = INF;
-    for (int i = 0; i < N; i++)
+    //전부 켜진 상태에서 0번으로 돌아오는 비용까지 더한 게 답
+    int full = (1 << n) - 1, ans = INF;
+    for (int i = 0; i < n; i++)
         if (graph[i][0])
             ans = min(ans, dp[full][i] + graph[i][0]);
     return ans;
@@ -156,24 +206,40 @@ int tsp(vector<vector<int>>& graph, int N) {
 
 #### Python
 ```python
-A = 0b1010  # {1, 3}
-B = 0b1100  # {2, 3}
+#A = {1, 3}, B = {2, 3}
+A = 0b1010
+B = 0b1100
 
-A | B   # 합집합  → 0b1110 = {1, 2, 3}
-A & B   # 교집합  → 0b1000 = {3}
-A ^ B   # 대칭차  → 0b0110 = {1, 2}
-A & ~B  # 차집합  → 0b0010 = {1}
+#합집합 > 0b1110 = {1, 2, 3}
+A | B
+
+#교집합 > 0b1000 = {3}
+A & B
+
+#대칭차 > 0b0110 = {1, 2}
+A ^ B
+
+#차집합 > 0b0010 = {1}
+A & ~B
 ```
 
 #### C++
 ```cpp
-int A = 0b1010;   // {1, 3}
-int B = 0b1100;   // {2, 3}
+//A = {1, 3}, B = {2, 3}
+int A = 0b1010;
+int B = 0b1100;
 
-A | B;    // 합집합  → 0b1110
-A & B;    // 교집합  → 0b1000
-A ^ B;    // 대칭차  → 0b0110
-A & ~B;   // 차집합  → 0b0010
+//합집합 > 0b1110
+A | B;
+
+//교집합 > 0b1000
+A & B;
+
+//대칭차 > 0b0110
+A ^ B;
+
+//차집합 > 0b0010
+A & ~B;
 ```
 
 ## 6. 이걸 떠올려야 할 때

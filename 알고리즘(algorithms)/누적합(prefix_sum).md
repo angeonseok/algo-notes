@@ -31,15 +31,17 @@
 arr = [1, 2, 3, 4, 5]
 n = len(arr)
 
+#0번 자리 비워두고 시작해야 빼기가 깔끔해짐
 prefix = [0] * (n + 1)
 for i in range(n):
     prefix[i + 1] = prefix[i] + arr[i]
 
-# arr[l:r+1] 구간 합 (0-indexed)
+#arr[l:r+1] 구간 합 (0-indexed). 빼기 한 번이면 끝
 def range_sum(l, r):
     return prefix[r + 1] - prefix[l]
 
-range_sum(1, 3)  # arr[1] + arr[2] + arr[3] = 9
+#arr[1] + arr[2] + arr[3] = 9
+range_sum(1, 3)
 ```
 
 #### C++
@@ -47,32 +49,37 @@ range_sum(1, 3)  # arr[1] + arr[2] + arr[3] = 9
 vector<int> arr = {1, 2, 3, 4, 5};
 int n = arr.size();
 
+//합 커지면 int로는 터지니까 long long. 0번 자리는 비워두고 시작
 vector<long long> prefix(n + 1, 0);
 for (int i = 0; i < n; i++)
     prefix[i + 1] = prefix[i] + arr[i];
 
-// arr[l..r] 구간 합 (0-indexed) — prefix 전역 가정
+//arr[l..r] 구간 합 (0-indexed). 빼기 한 번이면 끝 — prefix 전역 가정
 long long rangeSum(int l, int r) {
     return prefix[r + 1] - prefix[l];
 }
-// rangeSum(1, 3) == 9
+
+//rangeSum(1, 3) == 9
 ```
 
 ### 2차원 누적 합
 
 #### Python
 ```python
-N, M = len(grid), len(grid[0])
+#0행 0열 패딩해두면 경계 체크 안 해도 되니까 편함
+N, M = len(mat), len(mat[0])
 prefix = [[0] * (M + 1) for _ in range(N + 1)]
 
+#위 + 왼쪽 더하면 겹치는 부분이 두 번 들어가니까 한 번 빼주자
 for i in range(1, N + 1):
     for j in range(1, M + 1):
-        prefix[i][j] = (grid[i-1][j-1]
+        prefix[i][j] = (mat[i-1][j-1]
                       + prefix[i-1][j]
                       + prefix[i][j-1]
                       - prefix[i-1][j-1])
 
-# (r1,c1) ~ (r2,c2) 구간 합 (0-indexed)
+#(r1,c1) ~ (r2,c2) 구간 합 (0-indexed)
+#위/왼쪽 덜어내고, 두 번 빠진 모서리 다시 더해주기
 def range_sum_2d(r1, c1, r2, c2):
     return (prefix[r2+1][c2+1]
           - prefix[r1][c2+1]
@@ -82,17 +89,20 @@ def range_sum_2d(r1, c1, r2, c2):
 
 #### C++
 ```cpp
-int N = grid.size(), M = grid[0].size();
+//0행 0열 패딩해두면 경계 체크 안 해도 되니까 편함
+int N = mat.size(), M = mat[0].size();
 vector<vector<long long>> prefix(N + 1, vector<long long>(M + 1, 0));
 
+//위 + 왼쪽 더하면 겹치는 부분이 두 번 들어가니까 한 번 빼주자
 for (int i = 1; i <= N; i++)
     for (int j = 1; j <= M; j++)
-        prefix[i][j] = grid[i-1][j-1]
+        prefix[i][j] = mat[i-1][j-1]
                      + prefix[i-1][j]
                      + prefix[i][j-1]
                      - prefix[i-1][j-1];
 
-// (r1,c1) ~ (r2,c2) 구간 합 (0-indexed)
+//(r1,c1) ~ (r2,c2) 구간 합 (0-indexed)
+//위/왼쪽 덜어내고, 두 번 빠진 모서리 다시 더해주기
 long long rangeSum2d(int r1, int c1, int r2, int c2) {
     return prefix[r2+1][c2+1]
          - prefix[r1][c2+1]
@@ -105,10 +115,12 @@ long long rangeSum2d(int r1, int c1, int r2, int c2) {
 
 #### Python
 ```python
-# arr[l:r+1]에 val을 더하는 연산을 여러 번 수행
+#arr[l:r+1]에 val을 더하는 연산을 여러 번 수행
+#diff[r+1]까지 건드리니까 크기는 n+1로 잡자
 n = 5
 diff = [0] * (n + 1)
 
+#시작에 +val, 끝난 다음칸에 -val만 박기. 실제 더하기는 나중에 한 방에
 def range_update(l, r, val):
     diff[l] += val
     diff[r + 1] -= val
@@ -116,6 +128,7 @@ def range_update(l, r, val):
 range_update(1, 3, 5)
 range_update(2, 4, 3)
 
+#업데이트 다 끝나고 누적합 돌려야 진짜 배열이 나옴
 result = [0] * n
 result[0] = diff[0]
 for i in range(1, n):
@@ -124,16 +137,18 @@ for i in range(1, n):
 
 #### C++
 ```cpp
-// arr[l..r]에 val을 더하는 연산을 여러 번 수행
+//arr[l..r]에 val을 더하는 연산을 여러 번 수행
+//diff[r+1]까지 건드리니까 크기는 n+1
 int n = 5;
 vector<long long> diff(n + 1, 0);
 
-void rangeUpdate(int l, int r, long long val) {   // diff 전역 가정
+//시작에 +val, 끝난 다음칸에 -val만 박기 (diff 전역 가정)
+void rangeUpdate(int l, int r, long long val) {
     diff[l] += val;
     diff[r + 1] -= val;
 }
 
-// 모든 업데이트 후 실제 배열 복원
+//업데이트 다 끝나고 누적합 돌려야 진짜 배열이 나옴
 // vector<long long> result(n);
 // result[0] = diff[0];
 // for (int i = 1; i < n; i++) result[i] = result[i-1] + diff[i];
@@ -145,35 +160,46 @@ void rangeUpdate(int l, int r, long long val) {   // diff 전역 가정
 
 #### Python
 ```python
-# 구간 합이 M으로 나누어 떨어지는 경우의 수
 from collections import defaultdict
 
+#구간 합이 M으로 나누어 떨어지는 경우의 수
+#나머지가 같은 두 지점 사이 구간합은 M의 배수. 그 짝을 세자
 def count_divisible(arr, M):
     prefix = 0
-    remainder_count = defaultdict(int)
-    remainder_count[0] = 1
+
+    #나머지 0은 시작점 몫으로 미리 하나 깔아두기
+    cnt = defaultdict(int)
+    cnt[0] = 1
     result = 0
 
     for v in arr:
         prefix = (prefix + v) % M
-        result += remainder_count[prefix]
-        remainder_count[prefix] += 1
+
+        #앞에서 같은 나머지 나온 개수만큼 짝이 생김
+        result += cnt[prefix]
+        cnt[prefix] += 1
 
     return result
 ```
 
 #### C++
 ```cpp
-// 구간 합이 M으로 나누어 떨어지는 경우의 수
+//구간 합이 M으로 나누어 떨어지는 경우의 수
+//나머지가 같은 두 지점 사이 구간합은 M의 배수. 그 짝을 세자
 long long countDivisible(vector<int>& arr, int M) {
     long long prefix = 0, result = 0;
-    unordered_map<long long,long long> remainder_count;
-    remainder_count[0] = 1;
+
+    //나머지 0은 시작점 몫으로 미리 하나 깔아두기
+    unordered_map<long long,long long> cnt;
+    cnt[0] = 1;
 
     for (int v : arr) {
-        prefix = ((prefix + v) % M + M) % M;   // 음수 방지
-        result += remainder_count[prefix];
-        remainder_count[prefix]++;
+        //C++ %는 음수 뱉을 수 있으니 M 더했다 다시 나머지
+        prefix = ((prefix + v) % M + M) % M;
+
+        //앞에서 같은 나머지 나온 개수만큼 짝이 생김
+        result += cnt[prefix];
+        cnt[prefix]++;
     }
     return result;
 }

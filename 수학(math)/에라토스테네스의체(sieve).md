@@ -26,48 +26,68 @@
 
 #### Python
 ```python
+#일단 다 소수라고 깔고 시작, 아닌 놈들을 지워나가자
 def sieve(n):
     is_prime = [True] * (n + 1)
+
+    #0이랑 1은 소수 아니니까 먼저 빼기
     is_prime[0] = is_prime[1] = False
 
+    #√n까지만 봐도 충분
     for i in range(2, int(n**0.5) + 1):
+        #이미 지워진 놈은 걔 배수도 다 지워졌으니 스킵
         if is_prime[i]:
-            for j in range(i*i, n + 1, i):  # i*i부터 시작 (최적화)
+            #i*i 미만은 더 작은 소수가 이미 지웠으니까 i*i부터 시작
+            for j in range(i*i, n + 1, i):
                 is_prime[j] = False
 
+    #살아남은 놈들이 소수
     return [i for i in range(2, n + 1) if is_prime[i]]
 
-primes = sieve(100)  # 100 이하 소수 목록
+primes = sieve(100)  #100 이하 소수 목록
 ```
 
 #### C++
 ```cpp
+//일단 다 소수라고 깔고 시작, 아닌 놈들을 지워나가자
 vector<int> sieve(int n) {
-    vector<bool> is_prime(n + 1, true);   // vector<bool>은 비트 압축 → 메모리 8배 절약
+    //vector<bool>은 비트 압축이라 메모리 8배 절약됨
+    vector<bool> is_prime(n + 1, true);
+
+    //0이랑 1은 소수 아니니까 먼저 빼기
     if (n >= 0) is_prime[0] = false;
     if (n >= 1) is_prime[1] = false;
 
+    //√n까지만 봐도 충분
     for (int i = 2; (long long)i * i <= n; i++) {
+        //이미 지워진 놈은 걔 배수도 다 지워졌으니 스킵
         if (is_prime[i]) {
-            for (long long j = (long long)i * i; j <= n; j += i)  // i*i부터 (오버플로 방지 long long)
+            //i*i 미만은 더 작은 소수가 이미 지웠으니까 i*i부터, i*i가 int 넘칠 수 있어서 long long
+            for (long long j = (long long)i * i; j <= n; j += i)
                 is_prime[j] = false;
         }
     }
+
+    //살아남은 놈들이 소수
     vector<int> primes;
     for (int i = 2; i <= n; i++)
         if (is_prime[i]) primes.push_back(i);
     return primes;
 }
-// sieve(100) → 100 이하 소수 목록
+//sieve(100) → 100 이하 소수 목록
 ```
 
 ### 소수 판별만 할 때
 
 #### Python
 ```python
+#체 깔기 아까운 단발성 판별이면 걍 √n까지 나눠보자
 def is_prime(n):
+    #0, 1은 소수 아님
     if n < 2:
         return False
+
+    #약수가 있으면 √n 이하에 반드시 하나는 있음
     for i in range(2, int(n**0.5) + 1):
         if n % i == 0:
             return False
@@ -76,9 +96,13 @@ def is_prime(n):
 
 #### C++
 ```cpp
+//체 깔기 아까운 단발성 판별이면 걍 √n까지 나눠보자
 bool isPrime(long long n) {
+    //0, 1은 소수 아님
     if (n < 2) return false;
-    for (long long i = 2; i * i <= n; i++)   // 실수 sqrt 대신 i*i (오차 없음)
+
+    //약수가 있으면 √n 이하에 반드시 하나는 있음. sqrt 쓰면 오차나니까 i*i로 비교
+    for (long long i = 2; i * i <= n; i++)
         if (n % i == 0) return false;
     return true;
 }

@@ -31,31 +31,38 @@ import sys
 from collections import defaultdict
 sys.setrecursionlimit(100000)
 
+#DFS 두 번 돌려서 SCC 묶음들 뽑아내기
 def kosaraju(graph, reverse_graph, V):
     visited = [False] * (V + 1)
-    order = []  # 종료 순서
 
+    #DFS 끝나는 순서대로 쌓아두자
+    order = []
+
+    #원본 그래프로 훑으면서 종료 순서 기록
     def dfs1(v):
         visited[v] = True
-        for neighbor in graph[v]:
-            if not visited[neighbor]:
-                dfs1(neighbor)
+        for i in graph[v]:
+            if not visited[i]:
+                dfs1(i)
         order.append(v)
 
     for v in range(1, V + 1):
         if not visited[v]:
             dfs1(v)
 
+    #2차 탐색용으로 방문 기록 초기화
     visited = [False] * (V + 1)
     sccs = []
 
+    #역방향으로 훑었을 때 한 덩어리로 묶이는 놈들이 곧 SCC
     def dfs2(v, scc):
         visited[v] = True
         scc.append(v)
-        for neighbor in reverse_graph[v]:
-            if not visited[neighbor]:
-                dfs2(neighbor, scc)
+        for i in reverse_graph[v]:
+            if not visited[i]:
+                dfs2(i, scc)
 
+    #늦게 끝난 놈부터 꺼내야 하니까 pop
     while order:
         v = order.pop()
         if not visited[v]:
@@ -70,32 +77,42 @@ def kosaraju(graph, reverse_graph, V):
 ```cpp
 vector<vector<int>> graph, reverse_graph;
 vector<bool> visited;
-vector<int> order;             // 종료 순서
+
+//DFS 끝나는 순서대로 쌓아두자
+vector<int> order;
 vector<vector<int>> sccs;
 
+//원본 그래프로 훑으면서 종료 순서 기록
 void dfs1(int v) {
     visited[v] = true;
-    for (int next : graph[v])
-        if (!visited[next]) dfs1(next);
-    order.push_back(v);        // 종료 시점 기록
+    for (int i : graph[v])
+        if (!visited[i]) dfs1(i);
+
+    //돌아 나올 때 찍어야 종료 시점이 됨
+    order.push_back(v);
 }
 
+//역방향으로 훑었을 때 한 덩어리로 묶이는 놈들이 곧 SCC
 void dfs2(int v, vector<int>& scc) {
     visited[v] = true;
     scc.push_back(v);
-    for (int next : reverse_graph[v])
-        if (!visited[next]) dfs2(next, scc);
+    for (int i : reverse_graph[v])
+        if (!visited[i]) dfs2(i, scc);
 }
 
+//DFS 두 번 돌려서 SCC 묶음들 뽑아내기
 vector<vector<int>> kosaraju(int V) {
     visited.assign(V + 1, false);
     order.clear();
     for (int v = 1; v <= V; v++)
         if (!visited[v]) dfs1(v);
 
+    //2차 탐색용으로 방문 기록 초기화
     visited.assign(V + 1, false);
     sccs.clear();
-    for (int i = order.size() - 1; i >= 0; i--) {   // 종료 역순
+
+    //늦게 끝난 놈부터 봐야 하니까 종료 역순으로
+    for (int i = order.size() - 1; i >= 0; i--) {
         int v = order[i];
         if (!visited[v]) {
             vector<int> scc;
@@ -105,7 +122,8 @@ vector<vector<int>> kosaraju(int V) {
     }
     return sccs;
 }
-// 입력: graph[u].push_back(v); reverse_graph[v].push_back(u);
+
+//입력: graph[u].push_back(v); reverse_graph[v].push_back(u);
 ```
 
 ### 타잔 알고리즘 (DFS 1번, 구현 까다로움)
@@ -115,27 +133,35 @@ vector<vector<int>> kosaraju(int V) {
 import sys
 sys.setrecursionlimit(100000)
 
+#DFS 한 번으로 SCC 뽑기
 def tarjan(graph, V):
     order = [0]
     visited = [0] * (V + 1)
+
+    #low는 역행 간선 타고 닿을 수 있는 제일 빠른 방문 번호
     low = [0] * (V + 1)
     on_stack = [False] * (V + 1)
     stack = []
     sccs = []
 
     def dfs(v):
+        #방문 번호 찍고 일단 스택에 넣어두기
         order[0] += 1
         visited[v] = low[v] = order[0]
         stack.append(v)
         on_stack[v] = True
 
-        for neighbor in graph[v]:
-            if not visited[neighbor]:
-                dfs(neighbor)
-                low[v] = min(low[v], low[neighbor])
-            elif on_stack[neighbor]:
-                low[v] = min(low[v], visited[neighbor])
+        for i in graph[v]:
+            #아직 안 가본 놈이면 내려갔다 와서 low 당겨오기
+            if not visited[i]:
+                dfs(i)
+                low[v] = min(low[v], low[i])
 
+            #스택에 남아있는 놈만 같은 SCC 후보. 이미 끝난 SCC는 건드리면 안 됨
+            elif on_stack[i]:
+                low[v] = min(low[v], visited[i])
+
+        #더 위로 못 올라가면 v가 SCC 루트. 스택에서 v까지 걷어내자
         if low[v] == visited[v]:
             scc = []
             while True:
@@ -156,27 +182,34 @@ def tarjan(graph, V):
 #### C++
 ```cpp
 vector<vector<int>> graph;
-vector<int> disc, low;      // disc: 방문 순서, low: 도달 가능한 최소 순서
+
+//disc는 방문 순서, low는 역행 간선 타고 닿을 수 있는 제일 빠른 순서
+vector<int> disc, low;
 vector<bool> on_stack;
 stack<int> stk;
 int timer = 0;
 vector<vector<int>> sccs;
 
+//DFS 한 번으로 SCC 뽑기
 void tarjanDfs(int v) {
+    //방문 번호 찍고 일단 스택에 넣어두기
     disc[v] = low[v] = ++timer;
     stk.push(v);
     on_stack[v] = true;
 
-    for (int next : graph[v]) {
-        if (disc[next] == 0) {           // 미방문
-            tarjanDfs(next);
-            low[v] = min(low[v], low[next]);
-        } else if (on_stack[next]) {     // 스택 위에 있는 정점만
-            low[v] = min(low[v], disc[next]);
+    for (int i : graph[v]) {
+        //아직 안 가본 놈이면 내려갔다 와서 low 당겨오기
+        if (disc[i] == 0) {
+            tarjanDfs(i);
+            low[v] = min(low[v], low[i]);
+        } else if (on_stack[i]) {
+            //스택 위에 있는 놈만 같은 SCC 후보. 이미 끝난 SCC는 건드리면 안 됨
+            low[v] = min(low[v], disc[i]);
         }
     }
 
-    if (low[v] == disc[v]) {             // v가 SCC의 루트
+    //더 위로 못 올라가면 v가 SCC 루트. 스택에서 v까지 걷어내자
+    if (low[v] == disc[v]) {
         vector<int> scc;
         while (true) {
             int u = stk.top(); stk.pop();
@@ -187,8 +220,9 @@ void tarjanDfs(int v) {
         sccs.push_back(scc);
     }
 }
-// disc.assign(V+1, 0); low.assign(V+1, 0); on_stack.assign(V+1, false);
-// for (int v = 1; v <= V; v++) if (disc[v] == 0) tarjanDfs(v);
+
+//disc.assign(V+1, 0); low.assign(V+1, 0); on_stack.assign(V+1, false);
+//for (int v = 1; v <= V; v++) if (disc[v] == 0) tarjanDfs(v);
 ```
 
 ## 5. 코사라주 vs 타잔
@@ -203,32 +237,36 @@ void tarjanDfs(int v) {
 
 #### Python
 ```python
+#각 정점이 어느 SCC 소속인지 번호 붙여주기
 scc_id = [0] * (V + 1)
 for i, scc in enumerate(sccs):
     for v in scc:
         scc_id[v] = i
 
+#SCC 하나를 노드 하나로 보면 사이클 없는 DAG가 나옴
 dag = defaultdict(set)
 for v in range(1, V + 1):
-    for neighbor in graph[v]:
-        if scc_id[v] != scc_id[neighbor]:  # 다른 SCC 간 간선만
-            dag[scc_id[v]].add(scc_id[neighbor])
+    for i in graph[v]:
+        #같은 SCC 안 간선은 압축되면서 사라지니까 스킵
+        if scc_id[v] != scc_id[i]:
+            dag[scc_id[v]].add(scc_id[i])
 ```
 
 #### C++
 ```cpp
-// 각 정점이 속한 SCC 번호
+//각 정점이 어느 SCC 소속인지 번호 붙여주기
 vector<int> scc_id(V + 1);
 for (int i = 0; i < (int)sccs.size(); i++)
     for (int v : sccs[i])
         scc_id[v] = i;
 
-// SCC 간 간선으로 DAG 구성
+//SCC 하나를 노드 하나로 보면 사이클 없는 DAG가 나옴
 vector<set<int>> dag(sccs.size());
 for (int v = 1; v <= V; v++)
-    for (int next : graph[v])
-        if (scc_id[v] != scc_id[next])   // 다른 SCC 간 간선만
-            dag[scc_id[v]].insert(scc_id[next]);
+    for (int i : graph[v])
+        //같은 SCC 안 간선은 압축되면서 사라지니까 스킵
+        if (scc_id[v] != scc_id[i])
+            dag[scc_id[v]].insert(scc_id[i]);
 ```
 
 ## 7. 이걸 떠올려야 할 때

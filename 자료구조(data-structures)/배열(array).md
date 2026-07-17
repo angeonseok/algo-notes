@@ -32,91 +32,93 @@
 ```python
 arr = [1, 2, 3, 4, 5]
 
-# 접근
-arr[0]   # 1
-arr[-1]  # 5
+#접근은 O(1). arr[0]은 1, arr[-1]은 5(파이썬은 음수 인덱스 됨)
+arr[0]
+arr[-1]
 
-# 슬라이싱
-arr[1:3]   # [2, 3]
-arr[::-1]  # [5, 4, 3, 2, 1] 뒤집기
+#슬라이싱. arr[1:3]은 [2, 3], arr[::-1]은 [5, 4, 3, 2, 1]로 뒤집기
+arr[1:3]
+arr[::-1]
 
-# 삽입 / 삭제
-arr.append(6)       # 맨 뒤 추가 O(1)
-arr.insert(2, 99)   # 중간 삽입 O(n)
-arr.pop()           # 맨 뒤 삭제 O(1)
-arr.pop(2)          # 중간 삭제 O(n)
+#맨 뒤는 O(1). 중간은 뒤를 다 밀어야 되니까 O(n)
+arr.append(6)
+arr.insert(2, 99)
+arr.pop()
+arr.pop(2)
 
-# 탐색
-if 3 in arr:        # O(n)
+#탐색은 O(n). index는 없으면 ValueError 뱉으니까 주의
+if 3 in arr:
     print("있음")
-arr.index(3)        # 인덱스 반환, 없으면 ValueError
+arr.index(3)
 
-# 정렬
-arr.sort()              # 제자리 정렬
-sorted_arr = sorted(arr)  # 새 리스트 반환
-arr.sort(reverse=True)  # 내림차순
+#sort는 제자리, sorted는 새 리스트 반환. reverse=True면 내림차순
+arr.sort()
+sorted_arr = sorted(arr)
+arr.sort(reverse=True)
 ```
 
 #### C++
 ```cpp
 vector<int> arr = {1, 2, 3, 4, 5};
 
-// 접근
-arr[0];       // 1
-arr.back();   // 5  (Python arr[-1] 대응)
+//접근은 O(1). arr[0]은 1, arr.back()은 5(Python arr[-1] 대응)
+arr[0];
+arr.back();
 
-// "슬라이싱"은 없음 → 반복자로 부분 벡터 생성
-vector<int> sub(arr.begin() + 1, arr.begin() + 3);   // {2, 3}
-reverse(arr.begin(), arr.end());                     // 뒤집기
+//"슬라이싱"은 없으니까 반복자로 부분 벡터 뜨기 → {2, 3}
+vector<int> sub(arr.begin() + 1, arr.begin() + 3);
 
-// 삽입 / 삭제
-arr.push_back(6);                  // 맨 뒤 추가 O(1)
-arr.insert(arr.begin() + 2, 99);   // 중간 삽입 O(n)
-arr.pop_back();                    // 맨 뒤 삭제 O(1)
-arr.erase(arr.begin() + 2);        // 중간 삭제 O(n)
+//뒤집기
+reverse(arr.begin(), arr.end());
 
-// 탐색 O(n)
+//맨 뒤는 O(1). 중간은 뒤를 다 밀어야 되니까 O(n)
+arr.push_back(6);
+arr.insert(arr.begin() + 2, 99);
+arr.pop_back();
+arr.erase(arr.begin() + 2);
+
+//탐색은 O(n). 못 찾으면 end() 나옴
 if (find(arr.begin(), arr.end(), 3) != arr.end()) { /* 있음 */ }
 
-// 정렬
-sort(arr.begin(), arr.end());     // 오름차순
-sort(arr.rbegin(), arr.rend());   // 내림차순 (역방향 반복자)
+//오름차순. 내림차순은 역방향 반복자로 걍 뒤집어서 넣기
+sort(arr.begin(), arr.end());
+sort(arr.rbegin(), arr.rend());
 ```
 
 ### 2차원 배열
 
 #### Python
 ```python
-# 초기화
+#3x4 배열 만들기
 N, M = 3, 4
-grid = [[0] * M for _ in range(N)]  # 3x4 배열
+mat = [[0] * M for _ in range(N)]
 
-# 주의: 아래처럼 하면 안 됨 (같은 리스트를 참조)
-grid = [[0] * M] * N  # 절대 쓰지 말 것
+#이렇게 하면 행들이 죄다 같은 리스트를 참조함. 절대 쓰지 말자
+mat = [[0] * M] * N
 
-# 접근
-grid[1][2] = 5
-print(grid[1][2])
+#접근
+mat[1][2] = 5
+print(mat[1][2])
 
-# 순회
+#순회
 for i in range(N):
     for j in range(M):
-        print(grid[i][j])
+        print(mat[i][j])
 ```
 
 #### C++
 ```cpp
-// 초기화 (참조 공유 문제 없음)
+//3x4, 0으로 초기화. C++은 참조 공유 문제 없음
 int N = 3, M = 4;
-vector<vector<int>> grid(N, vector<int>(M, 0));   // 3x4, 0으로 초기화
+vector<vector<int>> mat(N, vector<int>(M, 0));
 
-// 접근
-grid[1][2] = 5;
+//접근
+mat[1][2] = 5;
 
-// 순회
+//순회
 for (int i = 0; i < N; i++)
     for (int j = 0; j < M; j++)
-        cout << grid[i][j] << " ";
+        cout << mat[i][j] << " ";
 ```
 
 ## 5. 실전 패턴
@@ -125,11 +127,15 @@ for (int i = 0; i < N; i++)
 
 #### Python
 ```python
-# 정렬된 배열에서 합이 target인 쌍 찾기
+#정렬된 배열에서 합이 target인 쌍 찾기
 def two_sum(arr, target):
+    #양 끝에서 시작해서 좁혀오자
     left, right = 0, len(arr) - 1
+
     while left < right:
         s = arr[left] + arr[right]
+
+        #딱 맞으면 끝. 합이 작으면 왼쪽을 당기고, 크면 오른쪽을 당기자
         if s == target:
             return left, right
         elif s < target:
@@ -141,11 +147,15 @@ def two_sum(arr, target):
 
 #### C++
 ```cpp
-// 정렬된 배열에서 합이 target인 쌍 찾기
+//정렬된 배열에서 합이 target인 쌍 찾기
 pair<int,int> twoSum(vector<int>& arr, int target) {
+    //양 끝에서 시작해서 좁혀오자
     int left = 0, right = (int)arr.size() - 1;
+
     while (left < right) {
         int s = arr[left] + arr[right];
+
+        //딱 맞으면 끝. 합이 작으면 왼쪽을 당기고, 크면 오른쪽을 당기자
         if (s == target)      return {left, right};
         else if (s < target)  left++;
         else                  right--;
@@ -158,10 +168,13 @@ pair<int,int> twoSum(vector<int>& arr, int target) {
 
 #### Python
 ```python
-# 길이 k인 구간의 최대 합
+#길이 k인 구간의 최대 합
 def max_sum(arr, k):
+    #첫 윈도우는 걍 다 더해서 시작
     window = sum(arr[:k])
     result = window
+
+    #한 칸 밀 때마다 들어온 놈 더하고 빠진 놈 빼면 O(1)
     for i in range(k, len(arr)):
         window += arr[i] - arr[i - k]
         result = max(result, window)
@@ -170,11 +183,14 @@ def max_sum(arr, k):
 
 #### C++
 ```cpp
-// 길이 k인 구간의 최대 합
+//길이 k인 구간의 최대 합
 long long maxSum(vector<int>& arr, int k) {
+    //첫 윈도우는 걍 다 더해서 시작
     long long window = 0;
     for (int i = 0; i < k; i++) window += arr[i];
     long long result = window;
+
+    //한 칸 밀 때마다 들어온 놈 더하고 빠진 놈 빼면 O(1)
     for (int i = k; i < (int)arr.size(); i++) {
         window += arr[i] - arr[i - k];
         result = max(result, window);
@@ -187,27 +203,31 @@ long long maxSum(vector<int>& arr, int k) {
 
 #### Python
 ```python
-# 구간 합을 O(1)에 구하기
+#구간 합을 O(1)에 구하기
 arr = [1, 2, 3, 4, 5]
+
+#prefix[i]는 arr[0 ~ i-1]까지의 합. 한 칸 밀어서 잡으면 경계 처리가 편함
 prefix = [0] * (len(arr) + 1)
 for i in range(len(arr)):
     prefix[i + 1] = prefix[i] + arr[i]
 
-# arr[l:r+1] 구간 합
+#arr[l:r+1] 구간 합은 걍 빼기 한 번
 def range_sum(l, r):
     return prefix[r + 1] - prefix[l]
 ```
 
 #### C++
 ```cpp
-// 구간 합을 O(1)에 구하기
+//구간 합을 O(1)에 구하기
 vector<int> arr = {1, 2, 3, 4, 5};
+
+//prefix[i]는 arr[0 ~ i-1]까지의 합. 한 칸 밀어서 잡으면 경계 처리가 편함
 vector<long long> prefix(arr.size() + 1, 0);
 for (int i = 0; i < (int)arr.size(); i++)
     prefix[i + 1] = prefix[i] + arr[i];
 
-// arr[l..r] 구간 합
-long long rangeSum(int l, int r) {   // prefix가 전역이라고 가정
+//arr[l..r] 구간 합은 걍 빼기 한 번. prefix는 전역이라고 가정
+long long rangeSum(int l, int r) {
     return prefix[r + 1] - prefix[l];
 }
 ```

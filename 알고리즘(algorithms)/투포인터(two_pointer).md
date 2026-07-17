@@ -27,12 +27,16 @@
 
 #### Python
 ```python
+#정렬해놓고 양끝에서 좁혀오면서 합이 target인 쌍 찾기
 def two_sum(arr, target):
+    #정렬돼 있어야 합이 커질지 작아질지 판단 가능
     arr.sort()
     left, right = 0, len(arr) - 1
 
     while left < right:
         s = arr[left] + arr[right]
+
+        #합이 작으면 왼쪽을 땡겨서 키우고, 크면 오른쪽을 줄이자
         if s == target:
             return left, right
         elif s < target:
@@ -45,12 +49,16 @@ def two_sum(arr, target):
 
 #### C++
 ```cpp
+//정렬해놓고 양끝에서 좁혀오면서 합이 target인 쌍 찾기
 pair<int,int> twoSum(vector<int>& arr, int target) {
+    //정렬돼 있어야 합이 커질지 작아질지 판단 가능
     sort(arr.begin(), arr.end());
     int left = 0, right = (int)arr.size() - 1;
 
     while (left < right) {
         int s = arr[left] + arr[right];
+
+        //합이 작으면 왼쪽을 땡겨서 키우고, 크면 오른쪽을 줄이자
         if (s == target)     return {left, right};
         else if (s < target) left++;
         else                 right--;
@@ -63,39 +71,48 @@ pair<int,int> twoSum(vector<int>& arr, int target) {
 
 #### Python
 ```python
+#합이 딱 target인 연속 구간이 몇개인지 세기
 def count_subarrays(arr, target):
     left = 0
     curr_sum = 0
-    count = 0
+    cnt = 0
 
+    #right로 창을 늘려나가자
     for right in range(len(arr)):
         curr_sum += arr[right]
 
+        #넘치면 left를 땡겨서 창을 줄이자
         while curr_sum > target and left <= right:
             curr_sum -= arr[left]
             left += 1
 
+        #딱 맞으면 카운트
         if curr_sum == target:
-            count += 1
+            cnt += 1
 
-    return count
+    return cnt
 ```
 
 #### C++
 ```cpp
+//합이 딱 target인 연속 구간이 몇개인지 세기
 int countSubarrays(vector<int>& arr, int target) {
-    int left = 0, curr_sum = 0, count = 0;
+    int left = 0, curr_sum = 0, cnt = 0;
 
+    //right로 창을 늘려나가자
     for (int right = 0; right < (int)arr.size(); right++) {
         curr_sum += arr[right];
 
+        //넘치면 left를 땡겨서 창을 줄이자
         while (curr_sum > target && left <= right) {
             curr_sum -= arr[left];
             left++;
         }
-        if (curr_sum == target) count++;
+
+        //딱 맞으면 카운트
+        if (curr_sum == target) cnt++;
     }
-    return count;
+    return cnt;
 }
 ```
 
@@ -103,10 +120,13 @@ int countSubarrays(vector<int>& arr, int target) {
 
 #### Python
 ```python
+#크기 k 구간 중에 합이 제일 큰 놈 찾기
 def max_sum_window(arr, k):
+    #첫 창은 직접 더해놓고 시작
     window = sum(arr[:k])
     result = window
 
+    #매번 다시 더하지 말고 들어온 놈 더하고 나간 놈 빼기
     for i in range(k, len(arr)):
         window += arr[i] - arr[i - k]
         result = max(result, window)
@@ -116,11 +136,14 @@ def max_sum_window(arr, k):
 
 #### C++
 ```cpp
+//크기 k 구간 중에 합이 제일 큰 놈 찾기
 long long maxSumWindow(vector<int>& arr, int k) {
+    //첫 창은 직접 더해놓고 시작
     long long window = 0;
     for (int i = 0; i < k; i++) window += arr[i];
     long long result = window;
 
+    //매번 다시 더하지 말고 들어온 놈 더하고 나간 놈 빼기
     for (int i = k; i < (int)arr.size(); i++) {
         window += arr[i] - arr[i - k];
         result = max(result, window);
@@ -133,14 +156,19 @@ long long maxSumWindow(vector<int>& arr, int k) {
 
 #### Python
 ```python
+#중복 문자 없는 제일 긴 구간 길이 구하기
 def longest_unique(s):
     left = 0
+
+    #문자마다 마지막으로 본 인덱스 기록
     seen = {}
     result = 0
 
     for right, c in enumerate(s):
+        #창 안에서 또 나온 문자면 그 다음칸으로 left 점프
         if c in seen and seen[c] >= left:
             left = seen[c] + 1
+
         seen[c] = right
         result = max(result, right - left + 1)
 
@@ -149,14 +177,20 @@ def longest_unique(s):
 
 #### C++
 ```cpp
+//중복 문자 없는 제일 긴 구간 길이 구하기
 int longestUnique(const string& s) {
     int left = 0, result = 0;
-    unordered_map<char,int> seen;   // 문자 → 마지막 등장 인덱스
+
+    //문자마다 마지막으로 본 인덱스 기록
+    unordered_map<char,int> seen;
 
     for (int right = 0; right < (int)s.size(); right++) {
         char c = s[right];
+
+        //창 안에서 또 나온 문자면 그 다음칸으로 left 점프
         if (seen.count(c) && seen[c] >= left)
             left = seen[c] + 1;
+
         seen[c] = right;
         result = max(result, right - left + 1);
     }

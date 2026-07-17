@@ -28,33 +28,47 @@
 
 #### Python
 ```python
+#정렬된 arr에서 target 위치 찾기
 def binary_search(arr, target):
-    lo, hi = 0, len(arr) - 1
+    l, h = 0, len(arr) - 1
 
-    while lo <= hi:
-        mid = (lo + hi) // 2
+    while l <= h:
+        mid = (l + h) // 2
+
+        #찾았으면 바로 반환
         if arr[mid] == target:
             return mid
-        elif arr[mid] < target:
-            lo = mid + 1
-        else:
-            hi = mid - 1
 
-    return -1  # 없음
+        #mid가 작으면 target은 오른쪽에 있음
+        elif arr[mid] < target:
+            l = mid + 1
+
+        #아니면 왼쪽
+        else:
+            h = mid - 1
+
+    #범위 다 좁혔는데 없으면 없는 거
+    return -1
 ```
 
 #### C++
 ```cpp
+//정렬된 arr에서 target 위치 찾기
 int binarySearch(vector<int>& arr, int target) {
-    int lo = 0, hi = (int)arr.size() - 1;
+    int l = 0, h = (int)arr.size() - 1;
 
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;   // 오버플로 방지
+    while (l <= h) {
+        //l + h 하면 int 넘칠 수 있으니까 이렇게 (오버플로 방지)
+        int mid = l + (h - l) / 2;
+
+        //찾았으면 바로 반환, mid가 작으면 오른쪽, 크면 왼쪽
         if (arr[mid] == target) return mid;
-        else if (arr[mid] < target) lo = mid + 1;
-        else hi = mid - 1;
+        else if (arr[mid] < target) l = mid + 1;
+        else h = mid - 1;
     }
-    return -1;  // 없음
+
+    //범위 다 좁혔는데 없으면 없는 거
+    return -1;
 }
 ```
 
@@ -66,102 +80,130 @@ import bisect
 
 arr = [1, 2, 4, 4, 5, 7]
 
-# target 이상인 첫 번째 인덱스
-bisect.bisect_left(arr, 4)   # 2
+#target 이상인 첫 번째 인덱스 > 2
+bisect.bisect_left(arr, 4)
 
-# target 초과인 첫 번째 인덱스
-bisect.bisect_right(arr, 4)  # 4
+#target 초과인 첫 번째 인덱스 > 4
+bisect.bisect_right(arr, 4)
 
-# 4의 개수
-cnt = bisect.bisect_right(arr, 4) - bisect.bisect_left(arr, 4)  # 2
+#오른쪽 경계 - 왼쪽 경계 = 4의 개수 > 2
+cnt = bisect.bisect_right(arr, 4) - bisect.bisect_left(arr, 4)
 
-# 정렬 유지하며 삽입
-bisect.insort(arr, 3)  # [1, 2, 3, 4, 4, 5, 7]
+#정렬 유지하며 삽입 > [1, 2, 3, 4, 4, 5, 7]
+bisect.insort(arr, 3)
 ```
 
 #### C++
 ```cpp
 vector<int> arr = {1, 2, 4, 4, 5, 7};
 
-// target 이상인 첫 번째 인덱스 (bisect_left)
-int left = lower_bound(arr.begin(), arr.end(), 4) - arr.begin();   // 2
+//target 이상인 첫 번째 인덱스 (bisect_left) > 2
+int left = lower_bound(arr.begin(), arr.end(), 4) - arr.begin();
 
-// target 초과인 첫 번째 인덱스 (bisect_right)
-int right = upper_bound(arr.begin(), arr.end(), 4) - arr.begin();  // 4
+//target 초과인 첫 번째 인덱스 (bisect_right) > 4
+int right = upper_bound(arr.begin(), arr.end(), 4) - arr.begin();
 
-// 4의 개수
+//오른쪽 경계 - 왼쪽 경계 = 4의 개수 > 2
 int cnt = upper_bound(arr.begin(), arr.end(), 4)
-        - lower_bound(arr.begin(), arr.end(), 4);                  // 2
+        - lower_bound(arr.begin(), arr.end(), 4);
 
-// 정렬 유지하며 삽입
-arr.insert(lower_bound(arr.begin(), arr.end(), 3), 3);  // {1,2,3,4,4,5,7}
+//정렬 유지하며 삽입 > {1,2,3,4,4,5,7}
+arr.insert(lower_bound(arr.begin(), arr.end(), 3), 3);
 ```
 
 ### 매개변수 탐색 (Parametric Search)
 
 #### Python
 ```python
-# "조건을 만족하는 최솟값" 찾기
-def parametric_search(lo, hi):
-    result = hi  # 또는 lo
+#"조건을 만족하는 최솟값" 찾기
+def parametric_search(l, h):
+    #일단 아무거나 박아두고 되는 놈 나올 때마다 갱신 (또는 l)
+    ans = h
 
-    while lo <= hi:
-        mid = (lo + hi) // 2
-        if is_possible(mid):   # 조건 함수
-            result = mid
-            hi = mid - 1       # 더 작은 값 탐색 (최솟값)
-        else:
-            lo = mid + 1
+    while l <= h:
+        mid = (l + h) // 2
 
-    return result
-
-# "조건을 만족하는 최댓값" 찾기
-def parametric_search_max(lo, hi):
-    result = lo
-
-    while lo <= hi:
-        mid = (lo + hi) // 2
+        #is_possible이 조건 함수. 되는 값이면 답 후보로 챙겨두고
         if is_possible(mid):
-            result = mid
-            lo = mid + 1       # 더 큰 값 탐색 (최댓값)
-        else:
-            hi = mid - 1
+            ans = mid
 
-    return result
+            #더 작은 것도 되나 왼쪽 뒤져보자
+            h = mid - 1
+
+        #안 되면 너무 작았다는 뜻
+        else:
+            l = mid + 1
+
+    return ans
+
+#"조건을 만족하는 최댓값" 찾기
+def parametric_search_max(l, h):
+    ans = l
+
+    while l <= h:
+        mid = (l + h) // 2
+
+        #되는 값이면 답 후보로 챙겨두고
+        if is_possible(mid):
+            ans = mid
+
+            #더 큰 것도 되나 오른쪽 뒤져보자
+            l = mid + 1
+
+        #안 되면 너무 컸다는 뜻
+        else:
+            h = mid - 1
+
+    return ans
 ```
 
 #### C++
 ```cpp
-// "조건을 만족하는 최솟값" 찾기
-int parametricSearch(int lo, int hi) {
-    int result = hi;  // 또는 lo
+//"조건을 만족하는 최솟값" 찾기
+int parametricSearch(int l, int h) {
+    //일단 아무거나 박아두고 되는 놈 나올 때마다 갱신 (또는 l)
+    int ans = h;
 
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (isPossible(mid)) {   // 조건 함수
-            result = mid;
-            hi = mid - 1;        // 더 작은 값 탐색 (최솟값)
+    while (l <= h) {
+        int mid = l + (h - l) / 2;
+
+        //isPossible이 조건 함수. 되는 값이면 답 후보로 챙겨두고
+        if (isPossible(mid)) {
+            ans = mid;
+
+            //더 작은 것도 되나 왼쪽 뒤져보자
+            h = mid - 1;
+
+        //안 되면 너무 작았다는 뜻
         } else {
-            lo = mid + 1;
+            l = mid + 1;
         }
     }
-    return result;
+
+    return ans;
 }
 
-// "조건을 만족하는 최댓값" 찾기
-int parametricSearchMax(int lo, int hi) {
-    int result = lo;
+//"조건을 만족하는 최댓값" 찾기
+int parametricSearchMax(int l, int h) {
+    int ans = l;
 
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
+    while (l <= h) {
+        int mid = l + (h - l) / 2;
+
+        //되는 값이면 답 후보로 챙겨두고
         if (isPossible(mid)) {
-            result = mid;
-            lo = mid + 1;        // 더 큰 값 탐색 (최댓값)
+            ans = mid;
+
+            //더 큰 것도 되나 오른쪽 뒤져보자
+            l = mid + 1;
+
+        //안 되면 너무 컸다는 뜻
         } else {
-            hi = mid - 1;
+            h = mid - 1;
         }
     }
-    return result;
+
+    return ans;
 }
 ```
 
@@ -173,17 +215,19 @@ int parametricSearchMax(int lo, int hi) {
 ```python
 import bisect
 
-def count_in_range(arr, lo, hi):
-    # arr에서 lo 이상 hi 이하인 원소 개수
-    return bisect.bisect_right(arr, hi) - bisect.bisect_left(arr, lo)
+#arr에서 l 이상 h 이하인 원소 개수
+def count_in_range(arr, l, h):
+    #양쪽 경계 인덱스 구해서 빼면 그 사이 개수
+    return bisect.bisect_right(arr, h) - bisect.bisect_left(arr, l)
 ```
 
 #### C++
 ```cpp
-// arr에서 lo 이상 hi 이하인 원소 개수
-int countInRange(vector<int>& arr, int lo, int hi) {
-    return upper_bound(arr.begin(), arr.end(), hi)
-         - lower_bound(arr.begin(), arr.end(), lo);
+//arr에서 l 이상 h 이하인 원소 개수
+int countInRange(vector<int>& arr, int l, int h) {
+    //양쪽 경계 인덱스 구해서 빼면 그 사이 개수
+    return upper_bound(arr.begin(), arr.end(), h)
+         - lower_bound(arr.begin(), arr.end(), l);
 }
 ```
 
@@ -191,45 +235,61 @@ int countInRange(vector<int>& arr, int lo, int hi) {
 
 #### Python
 ```python
-# N개의 랜선을 K개 이상 만들 수 있는 최대 길이
+#N개의 랜선을 K개 이상 만들 수 있는 최대 길이
 def solution(lines, K):
+    #이 길이로 잘랐을 때 K개 이상 나오나?
     def is_possible(length):
-        return sum(l // length for l in lines) >= K
+        return sum(i // length for i in lines) >= K
 
-    lo, hi = 1, max(lines)
-    result = 0
-    while lo <= hi:
-        mid = (lo + hi) // 2
+    #길이는 1부터 제일 긴 랜선까지. 답이 이 범위 안에 있음
+    l, h = 1, max(lines)
+    ans = 0
+
+    while l <= h:
+        mid = (l + h) // 2
+
+        #길이가 길수록 개수는 줄어듦 > 되면 더 길게 가보자
         if is_possible(mid):
-            result = mid
-            lo = mid + 1
+            ans = mid
+            l = mid + 1
+
+        #안 되면 너무 길게 잘랐다는 뜻
         else:
-            hi = mid - 1
-    return result
+            h = mid - 1
+
+    return ans
 ```
 
 #### C++
 ```cpp
-// N개의 랜선을 K개 이상 만들 수 있는 최대 길이
+//N개의 랜선을 K개 이상 만들 수 있는 최대 길이
 int solution(vector<int>& lines, int K) {
+    //이 길이로 잘랐을 때 K개 이상 나오나?
     auto isPossible = [&](long long length) {
         long long cnt = 0;
-        for (int l : lines) cnt += l / length;
+        for (int i : lines) cnt += i / length;
         return cnt >= K;
     };
 
-    int lo = 1, hi = *max_element(lines.begin(), lines.end());
-    int result = 0;
-    while (lo <= hi) {
-        int mid = lo + (hi - lo) / 2;
+    //길이는 1부터 제일 긴 랜선까지. 답이 이 범위 안에 있음
+    int l = 1, h = *max_element(lines.begin(), lines.end());
+    int ans = 0;
+
+    while (l <= h) {
+        int mid = l + (h - l) / 2;
+
+        //길이가 길수록 개수는 줄어듦 > 되면 더 길게 가보자
         if (isPossible(mid)) {
-            result = mid;
-            lo = mid + 1;
+            ans = mid;
+            l = mid + 1;
+
+        //안 되면 너무 길게 잘랐다는 뜻
         } else {
-            hi = mid - 1;
+            h = mid - 1;
         }
     }
-    return result;
+
+    return ans;
 }
 ```
 

@@ -34,21 +34,31 @@ from functools import lru_cache
 import sys
 sys.setrecursionlimit(100000)
 
+#lru_cache가 알아서 결과 저장해주니까 메모 배열 따로 안 만들어도 됨
 @lru_cache(maxsize=None)
 def dp(n):
-    if n <= 1:      # 기저 조건
+    #기저 조건. 여기서 안 끊으면 무한 재귀
+    if n <= 1:
         return n
-    return dp(n - 1) + dp(n - 2)  # 점화식
+
+    #점화식 그대로 박기
+    return dp(n - 1) + dp(n - 2)
 ```
 
 #### C++
 ```cpp
-vector<long long> memo(100001, -1);   // -1 = 미계산
+//-1 = 아직 계산 안 한 칸. 실제 답이랑 안 겹치는 값으로 골라야 함
+vector<long long> memo(100001, -1);
 
 long long dp(int n) {
-    if (n <= 1) return n;              // 기저 조건
-    if (memo[n] != -1) return memo[n]; // 캐시 히트
-    return memo[n] = dp(n - 1) + dp(n - 2);  // 점화식
+    //기저 조건. 여기서 안 끊으면 무한 재귀
+    if (n <= 1) return n;
+
+    //이미 구해놨으면 걍 꺼내 쓰기
+    if (memo[n] != -1) return memo[n];
+
+    //점화식 그대로 박고 저장까지 한 번에
+    return memo[n] = dp(n - 1) + dp(n - 2);
 }
 ```
 
@@ -56,26 +66,38 @@ long long dp(int n) {
 
 #### Python
 ```python
+#작은 것부터 채워 올라가니까 재귀 깊이 걱정 없음
 def dp(n):
     if n <= 1:
         return n
+
+    #기저 조건 먼저 깔아두고 시작
     table = [0] * (n + 1)
     table[0] = 0
     table[1] = 1
+
+    #점화식 그대로. 앞의 두 칸은 이미 채워져 있음
     for i in range(2, n + 1):
-        table[i] = table[i - 1] + table[i - 2]  # 점화식
+        table[i] = table[i - 1] + table[i - 2]
+
     return table[n]
 ```
 
 #### C++
 ```cpp
+//작은 것부터 채워 올라가니까 재귀 깊이 걱정 없음
 long long dp(int n) {
     if (n <= 1) return n;
+
+    //기저 조건 먼저 깔아두고 시작
     vector<long long> table(n + 1, 0);
     table[0] = 0;
     table[1] = 1;
+
+    //점화식 그대로. 앞의 두 칸은 이미 채워져 있음
     for (int i = 2; i <= n; i++)
-        table[i] = table[i-1] + table[i-2];   // 점화식
+        table[i] = table[i-1] + table[i-2];
+
     return table[n];
 }
 ```
@@ -84,28 +106,38 @@ long long dp(int n) {
 
 #### Python
 ```python
-# 1칸 또는 2칸씩 오를 수 있을 때 N번째 계단 오르는 경우의 수
+#1칸 또는 2칸씩 오를 수 있을 때 N번째 계단 오르는 경우의 수
 def stair(n):
     if n <= 2:
         return n
+
+    #dp[1]은 1칸 하나, dp[2]는 1+1이랑 2 두 가지
     dp = [0] * (n + 1)
     dp[1] = 1
     dp[2] = 2
+
+    #마지막에 1칸 왔거나 2칸 왔거나 둘 중 하나니까 더하면 됨
     for i in range(3, n + 1):
         dp[i] = dp[i - 1] + dp[i - 2]
+
     return dp[n]
 ```
 
 #### C++
 ```cpp
-// 1칸 또는 2칸씩 오를 수 있을 때 N번째 계단 오르는 경우의 수
+//1칸 또는 2칸씩 오를 수 있을 때 N번째 계단 오르는 경우의 수
 long long stair(int n) {
     if (n <= 2) return n;
+
+    //dp[1]은 1칸 하나, dp[2]는 1+1이랑 2 두 가지
     vector<long long> dp(n + 1, 0);
     dp[1] = 1;
     dp[2] = 2;
+
+    //마지막에 1칸 왔거나 2칸 왔거나 둘 중 하나니까 더하면 됨
     for (int i = 3; i <= n; i++)
         dp[i] = dp[i-1] + dp[i-2];
+
     return dp[n];
 }
 ```
@@ -114,38 +146,42 @@ long long stair(int n) {
 
 #### Python
 ```python
-# 왼쪽 또는 위에서만 이동 가능할 때 (0,0) → (N-1,M-1) 최솟값
-def min_path(grid):
-    N, M = len(grid), len(grid[0])
+#왼쪽 또는 위에서만 이동 가능할 때 (0,0) → (N-1,M-1) 최솟값
+def min_path(mat):
+    N, M = len(mat), len(mat[0])
     dp = [[0] * M for _ in range(N)]
-    dp[0][0] = grid[0][0]
+    dp[0][0] = mat[0][0]
 
+    #첫 행/열은 올 수 있는 길이 하나뿐이라 걍 쭉 더하기
     for i in range(1, N):
-        dp[i][0] = dp[i-1][0] + grid[i][0]
+        dp[i][0] = dp[i-1][0] + mat[i][0]
     for j in range(1, M):
-        dp[0][j] = dp[0][j-1] + grid[0][j]
+        dp[0][j] = dp[0][j-1] + mat[0][j]
 
+    #위에서 왔거나 왼쪽에서 왔거나. 싼 놈 골라서 현재 칸 값 더하기
     for i in range(1, N):
         for j in range(1, M):
-            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j]
+            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + mat[i][j]
 
     return dp[N-1][M-1]
 ```
 
 #### C++
 ```cpp
-// 왼쪽 또는 위에서만 이동 가능할 때 (0,0) → (N-1,M-1) 최솟값
-int minPath(vector<vector<int>>& grid) {
-    int N = grid.size(), M = grid[0].size();
+//왼쪽 또는 위에서만 이동 가능할 때 (0,0) → (N-1,M-1) 최솟값
+int minPath(vector<vector<int>>& mat) {
+    int N = mat.size(), M = mat[0].size();
     vector<vector<int>> dp(N, vector<int>(M, 0));
-    dp[0][0] = grid[0][0];
+    dp[0][0] = mat[0][0];
 
-    for (int i = 1; i < N; i++) dp[i][0] = dp[i-1][0] + grid[i][0];
-    for (int j = 1; j < M; j++) dp[0][j] = dp[0][j-1] + grid[0][j];
+    //첫 행/열은 올 수 있는 길이 하나뿐이라 걍 쭉 더하기
+    for (int i = 1; i < N; i++) dp[i][0] = dp[i-1][0] + mat[i][0];
+    for (int j = 1; j < M; j++) dp[0][j] = dp[0][j-1] + mat[0][j];
 
+    //위에서 왔거나 왼쪽에서 왔거나. 싼 놈 골라서 현재 칸 값 더하기
     for (int i = 1; i < N; i++)
         for (int j = 1; j < M; j++)
-            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+            dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + mat[i][j];
 
     return dp[N-1][M-1];
 }

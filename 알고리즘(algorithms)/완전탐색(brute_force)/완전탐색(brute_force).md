@@ -29,19 +29,19 @@
 
 #### Python
 ```python
-# 모든 쌍 탐색 O(N²)
+#모든 쌍 탐색 O(N²)
 for i in range(n):
     for j in range(i + 1, n):
-        # i, j 조합 처리
+        #i, j 조합 처리
         pass
 ```
 
 #### C++
 ```cpp
-// 모든 쌍 탐색 O(N²)
+//모든 쌍 탐색 O(N²)
 for (int i = 0; i < n; i++)
     for (int j = i + 1; j < n; j++) {
-        // i, j 조합 처리
+        //i, j 조합 처리
     }
 ```
 
@@ -53,23 +53,25 @@ from itertools import permutations
 
 arr = [1, 2, 3]
 
-# 전체 순열 O(N!)
+#전체 순열 O(N!) > (1,2,3), (1,3,2), ...
 for p in permutations(arr):
-    print(p)  # (1,2,3), (1,3,2), ...
+    print(p)
 
-# r개 선택 순열
+#r개 선택 순열 > (1,2), (1,3), (2,1), ...
 for p in permutations(arr, 2):
-    print(p)  # (1,2), (1,3), (2,1), ...
+    print(p)
 ```
 
 #### C++
 ```cpp
 vector<int> arr = {1, 2, 3};
 
-// 전체 순열 O(N!) — 반드시 정렬된 상태에서 시작
+//next_permutation은 정렬된 상태에서 시작해야 전체 순열 다 나옴
 sort(arr.begin(), arr.end());
+
+//arr 사용: 1 2 3 > 1 3 2 > ...
 do {
-    // arr 사용: 1 2 3 → 1 3 2 → ...
+
 } while (next_permutation(arr.begin(), arr.end()));
 ```
 
@@ -81,28 +83,34 @@ from itertools import combinations, combinations_with_replacement
 
 arr = [1, 2, 3]
 
+#순서 상관없이 2개 뽑기 > (1,2), (1,3), (2,3)
 for c in combinations(arr, 2):
-    print(c)  # (1,2), (1,3), (2,3)
+    print(c)
 
+#중복 허용해서 뽑기 > (1,1), (1,2), (1,3), (2,2), ...
 for c in combinations_with_replacement(arr, 2):
-    print(c)  # (1,1), (1,2), (1,3), (2,2), ...
+    print(c)
 ```
 
 #### C++
 ```cpp
-// C++엔 combinations 내장이 없음 → 선택 마스크에 next_permutation 트릭
+//C++엔 combinations 내장이 없음 > 선택 마스크에 next_permutation 트릭
 vector<int> arr = {1, 2, 3};
 int n = arr.size(), r = 2;
 
 vector<bool> pick(n, false);
-fill(pick.end() - r, pick.end(), true);   // [F F T] 형태(가장 작은 배열)에서 시작
+
+//뒤쪽 r개만 true로. [F F T] 형태(가장 작은 배열)에서 시작해야 다 나옴
+fill(pick.end() - r, pick.end(), true);
 do {
+    //이번 마스크에서 true인 애들만 골라 담기 > (1,2), (1,3), (2,3)
     vector<int> comb;
     for (int i = 0; i < n; i++)
         if (pick[i]) comb.push_back(arr[i]);
-    // comb 사용: (1,2), (1,3), (2,3)
+
 } while (next_permutation(pick.begin(), pick.end()));
-// (복잡한 조건이면 백트래킹 파일의 combination 참고)
+
+//복잡한 조건이면 백트래킹 파일의 combination 참고
 ```
 
 ### 부분집합 (비트마스크)
@@ -112,9 +120,11 @@ do {
 arr = [1, 2, 3]
 n = len(arr)
 
-for mask in range(1 << n):  # 0 ~ 2^n - 1
+#0 ~ 2^n - 1. 각 비트가 원소 포함 여부
+for mask in range(1 << n):
     subset = []
     for i in range(n):
+        #i번째 비트 켜져 있으면 그 원소 넣기
         if mask & (1 << i):
             subset.append(arr[i])
     print(subset)
@@ -125,12 +135,15 @@ for mask in range(1 << n):  # 0 ~ 2^n - 1
 vector<int> arr = {1, 2, 3};
 int n = arr.size();
 
-for (int mask = 0; mask < (1 << n); mask++) {   // 0 ~ 2^n - 1
+//0 ~ 2^n - 1. 각 비트가 원소 포함 여부
+for (int mask = 0; mask < (1 << n); mask++) {
     vector<int> subset;
+    //i번째 비트 켜져 있으면 그 원소 넣기
     for (int i = 0; i < n; i++)
         if (mask & (1 << i))
             subset.push_back(arr[i]);
-    // subset 사용
+
+    //subset 사용
 }
 ```
 
@@ -143,14 +156,19 @@ for (int mask = 0; mask < (1 << n); mask++) {   // 0 ~ 2^n - 1
 from itertools import permutations
 
 result = float('inf')
+
+#모든 순열 다 돌려보고 제일 작은 값만 챙기기
 for p in permutations(arr):
     result = min(result, calculate(p))
 ```
 
 #### C++
 ```cpp
+//순열 다 뽑으려면 정렬부터
 sort(arr.begin(), arr.end());
 long long result = LLONG_MAX;
+
+//모든 순열 다 돌려보고 제일 작은 값만 챙기기
 do {
     result = min(result, calculate(arr));
 } while (next_permutation(arr.begin(), arr.end()));
@@ -162,7 +180,7 @@ do {
 ```python
 for i in range(N):
     for j in range(M):
-        if grid[i][j] == target:
+        if mat[i][j] == target:
             bfs(i, j)
 ```
 
@@ -170,7 +188,7 @@ for i in range(N):
 ```cpp
 for (int i = 0; i < N; i++)
     for (int j = 0; j < M; j++)
-        if (grid[i][j] == target)
+        if (mat[i][j] == target)
             bfs(i, j);
 ```
 
@@ -183,8 +201,10 @@ from itertools import combinations
 arr = [1, 2, 3, 4]
 target = 5
 
+#크기 1개짜리부터 전체까지 모든 조합 크기 다 돌기
 for r in range(1, len(arr) + 1):
     for c in combinations(arr, r):
+        #합이 딱 맞는 조합만 출력
         if sum(c) == target:
             print(c)
 ```
@@ -194,11 +214,15 @@ for r in range(1, len(arr) + 1):
 vector<int> arr = {1, 2, 3, 4};
 int target = 5, n = arr.size();
 
+//공집합 빼고(mask=1부터) 모든 부분집합 훑기
 for (int mask = 1; mask < (1 << n); mask++) {
+    //켜진 비트 원소들 합 구하기
     int sum = 0;
     for (int i = 0; i < n; i++)
         if (mask & (1 << i)) sum += arr[i];
-    if (sum == target) { /* 해당 부분집합 */ }
+
+    //합이 딱 맞으면 해당 부분집합
+    if (sum == target) { }
 }
 ```
 

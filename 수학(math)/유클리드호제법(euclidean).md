@@ -25,17 +25,20 @@
 
 #### Python
 ```python
+#gcd(a,b) = gcd(b, a%b) 계속 굴리다가 b가 0되면 그게 답
 def gcd(a, b):
     while b:
         a, b = b, a % b
     return a
 
+#두 수 곱을 gcd로 나누면 lcm
 def lcm(a, b):
     return a * b // gcd(a, b)
 ```
 
 #### C++
 ```cpp
+//gcd(a,b) = gcd(b, a%b) 계속 굴리다가 b가 0되면 그게 답
 long long gcd(long long a, long long b) {
     while (b) {
         long long t = a % b;
@@ -45,8 +48,9 @@ long long gcd(long long a, long long b) {
     return a;
 }
 
+//먼저 나누고 곱해야 오버플로 안 남
 long long lcm(long long a, long long b) {
-    return a / gcd(a, b) * b;   // 오버플로 방지: 먼저 나눈 뒤 곱하기
+    return a / gcd(a, b) * b;
 }
 ```
 
@@ -55,41 +59,47 @@ long long lcm(long long a, long long b) {
 #### Python
 ```python
 from math import gcd
-from math import lcm  # Python 3.9+
+from math import lcm  #Python 3.9+
 
-gcd(12, 8)   # 4
-lcm(12, 8)   # 24
+gcd(12, 8)   #4
+lcm(12, 8)   #24
 
-# 여러 수의 GCD/LCM
+#여러 수면 reduce로 걍 접어버리자
 from functools import reduce
 nums = [12, 8, 6]
-reduce(gcd, nums)  # 2
-reduce(lcm, nums)  # 24
+reduce(gcd, nums)  #2
+reduce(lcm, nums)  #24
 ```
 
 #### C++
 ```cpp
-// C++14: GCC 내장 __gcd 사용 (std::gcd / std::lcm 은 C++17부터 <numeric>)
-__gcd(12, 8);   // 4
+//C++14엔 std::gcd 없으니까 GCC 내장 __gcd 쓰자 (std::gcd/std::lcm은 C++17 <numeric>)
+__gcd(12, 8);   //4
 
-// 여러 수의 GCD/LCM
+//여러 수면 하나씩 접어나가자
 vector<long long> nums = {12, 8, 6};
+
+//g를 0에서 시작하면 gcd(0, x) = x라 첫 원소가 알아서 들어감
 long long g = 0;
-for (long long x : nums) g = __gcd(g, x);          // 2  (gcd(0, x) = x)
+for (long long x : nums) g = __gcd(g, x);          //2
+
+//l은 1에서 시작. 여기도 나누고 곱해야 오버플로 안 남
 long long l = 1;
-for (long long x : nums) l = l / __gcd(l, x) * x;  // 24
+for (long long x : nums) l = l / __gcd(l, x) * x;  //24
 ```
 
 ### 서로소 확인
 
 #### Python
 ```python
+#gcd가 1이면 둘이 서로소
 def is_coprime(a, b):
     return gcd(a, b) == 1
 ```
 
 #### C++
 ```cpp
+//gcd가 1이면 둘이 서로소
 bool isCoprime(long long a, long long b) {
     return __gcd(a, b) == 1;
 }

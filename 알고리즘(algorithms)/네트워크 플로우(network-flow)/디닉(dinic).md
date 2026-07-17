@@ -33,30 +33,41 @@ class Dinic:
         self.V = V
         self.graph = [[] for _ in range(V)]
 
+    #정방향 간선이랑 짝꿍 역방향 간선(용량 0) 같이 깔기
     def add_edge(self, u, v, cap):
-        # graph[u][i] = [to, cap, rev_idx]
+        #각 간선은 [도착점, 잔여용량, 반대편 간선 위치]
         self.graph[u].append([v, cap, len(self.graph[v])])
-        self.graph[v].append([u, 0,   len(self.graph[u]) - 1])  # 역방향
+        self.graph[v].append([u, 0,   len(self.graph[u]) - 1])
 
+    #소스에서 BFS로 레벨(거리) 매기기. 싱크까지 닿으면 흘릴 게 남은 것
     def bfs(self, s, t):
         self.level = [-1] * self.V
         self.level[s] = 0
         queue = deque([s])
         while queue:
             v = queue.popleft()
+
+            #용량 남은 간선만 타고 한 칸씩 레벨 부여
             for to, cap, _ in self.graph[v]:
                 if cap > 0 and self.level[to] == -1:
                     self.level[to] = self.level[v] + 1
                     queue.append(to)
         return self.level[t] != -1
 
+    #레벨 딱 한 단계씩 내려가면서 흘릴 수 있는 만큼 밀어붙이기
     def dfs(self, v, t, f):
         if v == t:
             return f
+
+        #iter로 이미 막힌 간선은 건너뛰고 봄(중복 탐색 방지)
         while self.iter[v] < len(self.graph[v]):
             to, cap, rev = self.graph[v][self.iter[v]]
+
+            #레벨 정확히 +1인 데로만 가야 최단 증가경로
             if cap > 0 and self.level[v] < self.level[to]:
                 d = self.dfs(to, t, min(f, cap))
+
+                #흘렸으면 정방향 깎고 역방향 채우기(취소용)
                 if d > 0:
                     self.graph[v][self.iter[v]][1] -= d
                     self.graph[to][rev][1] += d
@@ -66,8 +77,13 @@ class Dinic:
 
     def max_flow(self, s, t):
         flow = 0
+
+        #레벨 그래프 다시 못 만들 때까지 반복
         while self.bfs(s, t):
+            #새 레벨 그래프마다 iter 초기화 필수
             self.iter = [0] * self.V
+
+            #막힐 때까지 계속 짜내기
             while True:
                 f = self.dfs(s, t, float('inf'))
                 if f == 0:
@@ -86,11 +102,13 @@ struct Dinic {
 
     Dinic(int V) : V(V), graph(V), level(V), iter(V) {}
 
+    //정방향 간선이랑 짝꿍 역방향 간선(용량 0) 같이 깔기
     void addEdge(int u, int v, int cap) {
         graph[u].push_back({v, cap, (int)graph[v].size()});
-        graph[v].push_back({u, 0,   (int)graph[u].size() - 1});   // 역방향
+        graph[v].push_back({u, 0,   (int)graph[u].size() - 1});
     }
 
+    //소스에서 BFS로 레벨(거리) 매기기. 싱크까지 닿으면 흘릴 게 남은 것
     bool bfs(int s, int t) {
         fill(level.begin(), level.end(), -1);
         level[s] = 0;
@@ -98,21 +116,30 @@ struct Dinic {
         q.push(s);
         while (!q.empty()) {
             int v = q.front(); q.pop();
+
+            //용량 남은 간선만 타고 한 칸씩 레벨 부여
             for (auto& e : graph[v])
                 if (e.cap > 0 && level[e.to] == -1) {
                     level[e.to] = level[v] + 1;
                     q.push(e.to);
                 }
         }
-        return level[t] != -1;   // 싱크 도달 가능 여부
+        return level[t] != -1;
     }
 
+    //레벨 딱 한 단계씩 내려가면서 흘릴 수 있는 만큼 밀어붙이기
     int dfs(int v, int t, int f) {
         if (v == t) return f;
-        for (int& i = iter[v]; i < (int)graph[v].size(); i++) {   // current-arc 최적화
+
+        //i를 참조로 잡아야 막힌 간선 건너뛴 게 유지됨(current-arc). 값 복사하면 최적화 깨짐
+        for (int& i = iter[v]; i < (int)graph[v].size(); i++) {
             Edge& e = graph[v][i];
+
+            //레벨 정확히 +1인 데로만 가야 최단 증가경로
             if (e.cap > 0 && level[v] < level[e.to]) {
                 int d = dfs(e.to, t, min(f, e.cap));
+
+                //흘렸으면 정방향 깎고 역방향 채우기(취소용)
                 if (d > 0) {
                     e.cap -= d;
                     graph[e.to][e.rev].cap += d;
@@ -125,9 +152,14 @@ struct Dinic {
 
     int maxFlow(int s, int t) {
         int flow = 0;
+
+        //레벨 그래프 다시 못 만들 때까지 반복
         while (bfs(s, t)) {
-            fill(iter.begin(), iter.end(), 0);   // 매 레벨 그래프마다 초기화
+            //새 레벨 그래프마다 iter 초기화 필수
+            fill(iter.begin(), iter.end(), 0);
             int f;
+
+            //막힐 때까지 계속 짜내기
             while ((f = dfs(s, t, INT_MAX)) > 0)
                 flow += f;
         }
@@ -135,12 +167,12 @@ struct Dinic {
     }
 };
 
-// 사용 예시 (0-indexed)
-// int V, E; cin >> V >> E;
-// int S = 0, T = V - 1;
-// Dinic dinic(V);
-// for (int i = 0; i < E; i++) { int u,v,c; cin >> u >> v >> c; dinic.addEdge(u, v, c); }
-// cout << dinic.maxFlow(S, T) << "\n";
+//사용 예시 (0-indexed)
+//int V, E; cin >> V >> E;
+//int S = 0, T = V - 1;
+//Dinic dinic(V);
+//for (int i = 0; i < E; i++) { int u,v,c; cin >> u >> v >> c; dinic.addEdge(u, v, c); }
+//cout << dinic.maxFlow(S, T) << "\n";
 ```
 
 ## 5. 포드-풀커슨 vs 에드몬즈-카프 vs 디닉

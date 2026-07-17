@@ -26,14 +26,19 @@
 
 #### Python
 ```python
-def lcs(s1, s2):
-    N, M = len(s1), len(s2)
+#두 문자열의 최장 공통 부분수열 길이
+def lcs(str1, str2):
+    #dp[i][j] = str1 앞 i글자, str2 앞 j글자의 LCS 길이. 0행 0열은 패딩
+    N, M = len(str1), len(str2)
     dp = [[0] * (M + 1) for _ in range(N + 1)]
 
     for i in range(1, N + 1):
         for j in range(1, M + 1):
-            if s1[i-1] == s2[j-1]:
+            #글자 같으면 대각선에서 하나 이어붙이기
+            if str1[i-1] == str2[j-1]:
                 dp[i][j] = dp[i-1][j-1] + 1
+
+            #다르면 한 글자 버린 두 경우 중 더 긴 쪽
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
 
@@ -42,14 +47,19 @@ def lcs(s1, s2):
 
 #### C++
 ```cpp
-int lcs(const string& s1, const string& s2) {
-    int N = s1.size(), M = s2.size();
+//두 문자열의 최장 공통 부분수열 길이
+int lcs(const string& str1, const string& str2) {
+    //dp[i][j] = str1 앞 i글자, str2 앞 j글자의 LCS 길이. 0행 0열은 패딩
+    int N = str1.size(), M = str2.size();
     vector<vector<int>> dp(N + 1, vector<int>(M + 1, 0));
 
     for (int i = 1; i <= N; i++)
         for (int j = 1; j <= M; j++) {
-            if (s1[i-1] == s2[j-1])
+            //글자 같으면 대각선에서 하나 이어붙이기
+            if (str1[i-1] == str2[j-1])
                 dp[i][j] = dp[i-1][j-1] + 1;
+
+            //다르면 한 글자 버린 두 경우 중 더 긴 쪽
             else
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
         }
@@ -61,60 +71,73 @@ int lcs(const string& s1, const string& s2) {
 
 #### Python
 ```python
-def lcs_sequence(s1, s2):
-    N, M = len(s1), len(s2)
+#길이만 말고 실제 공통 수열까지 뽑기
+def lcs_sequence(str1, str2):
+    #일단 평소처럼 dp 테이블 다 채워두기
+    N, M = len(str1), len(str2)
     dp = [[0] * (M + 1) for _ in range(N + 1)]
 
     for i in range(1, N + 1):
         for j in range(1, M + 1):
-            if s1[i-1] == s2[j-1]:
+            if str1[i-1] == str2[j-1]:
                 dp[i][j] = dp[i-1][j-1] + 1
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1])
 
-    # 역추적
+    #오른쪽 끝에서 거꾸로 따라 올라가며 글자 주워담기
     result = []
     i, j = N, M
     while i > 0 and j > 0:
-        if s1[i-1] == s2[j-1]:
-            result.append(s1[i-1])
+        #글자 같았던 칸이면 그놈이 LCS 멤버. 대각선으로 이동
+        if str1[i-1] == str2[j-1]:
+            result.append(str1[i-1])
             i -= 1
             j -= 1
+
+        #아니면 값 물려준 쪽으로 되돌아가기
         elif dp[i-1][j] > dp[i][j-1]:
             i -= 1
         else:
             j -= 1
 
+    #뒤에서부터 담았으니 뒤집어야 순서 맞음
     return ''.join(reversed(result))
 ```
 
 #### C++
 ```cpp
-string lcsSequence(const string& s1, const string& s2) {
-    int N = s1.size(), M = s2.size();
+//길이만 말고 실제 공통 수열까지 뽑기
+string lcsSequence(const string& str1, const string& str2) {
+    //일단 평소처럼 dp 테이블 다 채워두기
+    int N = str1.size(), M = str2.size();
     vector<vector<int>> dp(N + 1, vector<int>(M + 1, 0));
 
     for (int i = 1; i <= N; i++)
         for (int j = 1; j <= M; j++) {
-            if (s1[i-1] == s2[j-1])
+            if (str1[i-1] == str2[j-1])
                 dp[i][j] = dp[i-1][j-1] + 1;
             else
                 dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
         }
 
-    // 역추적
+    //오른쪽 끝에서 거꾸로 따라 올라가며 글자 주워담기
     string result;
     int i = N, j = M;
     while (i > 0 && j > 0) {
-        if (s1[i-1] == s2[j-1]) {
-            result += s1[i-1];
+        //글자 같았던 칸이면 그놈이 LCS 멤버. 대각선으로 이동
+        if (str1[i-1] == str2[j-1]) {
+            result += str1[i-1];
             i--; j--;
+
+        //아니면 값 물려준 쪽으로 되돌아가기
         } else if (dp[i-1][j] > dp[i][j-1]) {
             i--;
         } else {
             j--;
         }
     }
+
+    //뒤에서부터 담았으니 뒤집어야 순서 맞음
     reverse(result.begin(), result.end());
     return result;
 }

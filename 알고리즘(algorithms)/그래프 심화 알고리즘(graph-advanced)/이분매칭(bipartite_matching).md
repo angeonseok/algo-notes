@@ -30,16 +30,21 @@
 ```python
 from collections import defaultdict
 
+#왼쪽 애들 하나씩 밀어넣으면서 매칭 최대로 늘리기
 def bipartite_matching(graph, left_size, right_size):
-    match_left  = [-1] * (left_size + 1)   # match_left[i]  = i와 매칭된 오른쪽 정점
-    match_right = [-1] * (right_size + 1)  # match_right[j] = j와 매칭된 왼쪽 정점
+    #match_left[i]는 i랑 짝지어진 오른쪽 놈, match_right[j]는 그 반대
+    match_left  = [-1] * (left_size + 1)
+    match_right = [-1] * (right_size + 1)
 
+    #v가 들어갈 자리 찾아보고 성공하면 True
     def dfs(v, visited):
         for u in graph[v]:
+            #이번 턴에 이미 찔러본 놈이면 스킵
             if visited[u]:
                 continue
             visited[u] = True
-            # u가 매칭 안 됐거나, u의 매칭 상대가 다른 곳으로 갈 수 있으면
+
+            #u가 비었거나, u 주인이 다른 데로 비켜줄 수 있으면 뺏자
             if match_right[u] == -1 or dfs(match_right[u], visited):
                 match_left[v] = u
                 match_right[u] = v
@@ -48,7 +53,9 @@ def bipartite_matching(graph, left_size, right_size):
 
     result = 0
     for v in range(1, left_size + 1):
+        #visited는 매 시도마다 새로. 안 그러면 경로를 못 찾음
         visited = [False] * (right_size + 1)
+
         if dfs(v, visited):
             result += 1
 
@@ -57,15 +64,19 @@ def bipartite_matching(graph, left_size, right_size):
 
 #### C++
 ```cpp
-vector<vector<int>> graph;   // 왼쪽 정점 → 연결된 오른쪽 정점들
+//왼쪽 정점에서 뻗어나가는 오른쪽 정점들
+vector<vector<int>> graph;
 vector<int> match_left, match_right;
 vector<bool> visited;
 
+//v가 들어갈 자리 찾아보고 성공하면 true
 bool dfs(int v) {
     for (int u : graph[v]) {
+        //이번 턴에 이미 찔러본 놈이면 스킵
         if (visited[u]) continue;
         visited[u] = true;
-        // u가 매칭 안 됐거나, u의 매칭 상대가 다른 곳으로 갈 수 있으면
+
+        //u가 비었거나, u 주인이 다른 데로 비켜줄 수 있으면 뺏자
         if (match_right[u] == -1 || dfs(match_right[u])) {
             match_left[v] = u;
             match_right[u] = v;
@@ -75,13 +86,16 @@ bool dfs(int v) {
     return false;
 }
 
+//왼쪽 애들 하나씩 밀어넣으면서 매칭 최대로 늘리기
 int bipartiteMatching(int left_size, int right_size) {
     match_left.assign(left_size + 1, -1);
     match_right.assign(right_size + 1, -1);
 
     int result = 0;
     for (int v = 1; v <= left_size; v++) {
-        visited.assign(right_size + 1, false);   // 매 정점마다 초기화
+        //visited는 매 시도마다 새로. 안 그러면 경로를 못 찾음
+        visited.assign(right_size + 1, false);
+
         if (dfs(v)) result++;
     }
     return result;
@@ -112,10 +126,13 @@ for (int i = 1; i <= left_size; i++)
 ```python
 from collections import deque
 
+#두 가지 색으로 칠해지면 이분 그래프
 def is_bipartite(graph, V):
     color = [-1] * (V + 1)
 
+    #끊어진 덩어리가 있을 수 있으니 모든 정점에서 시작해보기
     for start in range(1, V + 1):
+        #이미 칠해진 놈이면 스킵
         if color[start] != -1:
             continue
         color[start] = 0
@@ -123,33 +140,42 @@ def is_bipartite(graph, V):
 
         while queue:
             v = queue.popleft()
-            for neighbor in graph[v]:
-                if color[neighbor] == -1:
-                    color[neighbor] = 1 - color[v]
-                    queue.append(neighbor)
-                elif color[neighbor] == color[v]:
-                    return False  # 같은 색 → 이분 그래프 아님
+            for i in graph[v]:
+                #안 칠해진 이웃은 나랑 반대색으로
+                if color[i] == -1:
+                    color[i] = 1 - color[v]
+                    queue.append(i)
+
+                #이웃이 나랑 같은 색이면 두 색으로는 안 갈라짐
+                elif color[i] == color[v]:
+                    return False
 
     return True
 ```
 
 #### C++
 ```cpp
+//두 가지 색으로 칠해지면 이분 그래프
 bool isBipartite(vector<vector<int>>& graph, int V) {
     vector<int> color(V + 1, -1);
+
+    //끊어진 덩어리가 있을 수 있으니 모든 정점에서 시작해보기
     for (int start = 1; start <= V; start++) {
+        //이미 칠해진 놈이면 스킵
         if (color[start] != -1) continue;
         color[start] = 0;
         queue<int> q;
         q.push(start);
         while (!q.empty()) {
             int v = q.front(); q.pop();
-            for (int next : graph[v]) {
-                if (color[next] == -1) {
-                    color[next] = 1 - color[v];
-                    q.push(next);
-                } else if (color[next] == color[v]) {
-                    return false;   // 같은 색 → 이분 그래프 아님
+            for (int i : graph[v]) {
+                //안 칠해진 이웃은 나랑 반대색으로
+                if (color[i] == -1) {
+                    color[i] = 1 - color[v];
+                    q.push(i);
+                } else if (color[i] == color[v]) {
+                    //이웃이 나랑 같은 색이면 두 색으로는 안 갈라짐
+                    return false;
                 }
             }
         }

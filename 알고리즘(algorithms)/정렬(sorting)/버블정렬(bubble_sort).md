@@ -34,9 +34,12 @@
 def bubble_sort(arr):
     n = len(arr)
     for i in range(n - 1):
-        for j in range(n - 1 - i):  # 뒤쪽은 이미 정렬됨
+        #한 바퀴 돌 때마다 제일 큰 놈이 뒤로 확정됨. 그래서 뒤쪽은 이미 정렬됨
+        for j in range(n - 1 - i):
+            #앞이 더 크면 자리 바꿔서 큰 놈 뒤로 밀기
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
+
     return arr
 ```
 
@@ -45,7 +48,9 @@ def bubble_sort(arr):
 void bubbleSort(vector<int>& arr) {
     int n = arr.size();
     for (int i = 0; i < n - 1; i++)
-        for (int j = 0; j < n - 1 - i; j++)   // 뒤쪽은 이미 정렬됨
+        //한 바퀴 돌 때마다 제일 큰 놈이 뒤로 확정됨. 그래서 뒤쪽은 이미 정렬됨
+        for (int j = 0; j < n - 1 - i; j++)
+            //앞이 더 크면 자리 바꿔서 큰 놈 뒤로 밀기
             if (arr[j] > arr[j + 1])
                 swap(arr[j], arr[j + 1]);
 }
@@ -58,13 +63,18 @@ void bubbleSort(vector<int>& arr) {
 def bubble_sort(arr):
     n = len(arr)
     for i in range(n - 1):
+        #이번 바퀴에 자리 바꾼 적 있나 체크용
         swapped = False
+
         for j in range(n - 1 - i):
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
                 swapped = True
-        if not swapped:  # 스왑 없으면 이미 정렬됨
+
+        #한 바퀴 도는 동안 한 번도 안 바꿨으면 이미 정렬 끝난 거니까 컷
+        if not swapped:
             break
+
     return arr
 ```
 
@@ -73,14 +83,18 @@ def bubble_sort(arr):
 void bubbleSort(vector<int>& arr) {
     int n = arr.size();
     for (int i = 0; i < n - 1; i++) {
+        //이번 바퀴에 자리 바꾼 적 있나 체크용
         bool swapped = false;
+
         for (int j = 0; j < n - 1 - i; j++) {
             if (arr[j] > arr[j + 1]) {
                 swap(arr[j], arr[j + 1]);
                 swapped = true;
             }
         }
-        if (!swapped) break;   // 스왑 없으면 이미 정렬됨
+
+        //한 바퀴 도는 동안 한 번도 안 바꿨으면 이미 정렬 끝난 거니까 컷
+        if (!swapped) break;
     }
 }
 ```

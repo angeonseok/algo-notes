@@ -26,52 +26,56 @@
 
 #### Python
 ```python
-# 큰 단위부터 최대한 사용
+#큰 단위부터 최대한 털어야 개수가 최소
 coins = [500, 100, 50, 10]
 change = 1260
-count = 0
+cnt = 0
 
 for coin in coins:
-    count += change // coin
+    cnt += change // coin
     change %= coin
 
-print(count)  # 6
+#답은 6
+print(cnt)
 ```
 
 #### C++
 ```cpp
-// 큰 단위부터 최대한 사용
+//큰 단위부터 최대한 털어야 개수가 최소
 int coins[] = {500, 100, 50, 10};
-int change = 1260, count = 0;
+int change = 1260, cnt = 0;
 
 for (int coin : coins) {
-    count += change / coin;
+    cnt += change / coin;
     change %= coin;
 }
-// count == 6
+
+//cnt == 6
 ```
 
 ### 회의실 배정 (대표 유형)
 
 #### Python
 ```python
-# 끝나는 시간 기준 정렬 → 가장 일찍 끝나는 것부터 선택
+#일찍 끝나는 놈부터 잡아야 뒤에 자리가 많이 남음
 meetings = [(1, 4), (3, 5), (0, 6), (5, 7), (3, 8), (5, 9), (6, 10)]
 meetings.sort(key=lambda x: (x[1], x[0]))
 
-count = 0
+cnt = 0
 end_time = 0
 for start, end in meetings:
+    #앞 회의 끝난 뒤에 시작하면 걍 넣기
     if start >= end_time:
-        count += 1
+        cnt += 1
         end_time = end
 
-print(count)  # 4
+#답은 4
+print(cnt)
 ```
 
 #### C++
 ```cpp
-// 끝나는 시간 기준 정렬 → 가장 일찍 끝나는 것부터 선택
+//일찍 끝나는 놈부터 잡아야 뒤에 자리가 많이 남음
 vector<pair<int,int>> meetings = {{1,4},{3,5},{0,6},{5,7},{3,8},{5,9},{6,10}};
 sort(meetings.begin(), meetings.end(),
      [](const pair<int,int>& a, const pair<int,int>& b){
@@ -79,57 +83,70 @@ sort(meetings.begin(), meetings.end(),
          return a.first < b.first;
      });
 
-int count = 0, end_time = 0;
+int cnt = 0, end_time = 0;
 for (auto& m : meetings) {
     int start = m.first, end = m.second;
+
+    //앞 회의 끝난 뒤에 시작하면 걍 넣기
     if (start >= end_time) {
-        count++;
+        cnt++;
         end_time = end;
     }
 }
-// count == 4
+
+//cnt == 4
 ```
 
 ### 최소 횟수로 구간 커버
 
 #### Python
 ```python
+#0 ~ total을 최소 개수로 덮기
 def min_cover(intervals, total):
     intervals.sort()
-    count = 0
+    cnt = 0
     cur_end = 0
     i = 0
 
     while cur_end < total:
         next_end = cur_end
+
+        #지금 위치에서 이어붙일 수 있는 놈들 중 제일 멀리 가는 놈 고르기
         while i < len(intervals) and intervals[i][0] <= cur_end:
             next_end = max(next_end, intervals[i][1])
             i += 1
-        if next_end == cur_end:
-            return -1  # 커버 불가
-        cur_end = next_end
-        count += 1
 
-    return count
+        #한 칸도 못 늘렸으면 구멍 뚫린 거라 커버 불가
+        if next_end == cur_end:
+            return -1
+        cur_end = next_end
+        cnt += 1
+
+    return cnt
 ```
 
 #### C++
 ```cpp
+//0 ~ total을 최소 개수로 덮기
 int minCover(vector<pair<int,int>>& intervals, int total) {
     sort(intervals.begin(), intervals.end());
-    int count = 0, cur_end = 0, i = 0, n = intervals.size();
+    int cnt = 0, cur_end = 0, i = 0, n = intervals.size();
 
     while (cur_end < total) {
         int next_end = cur_end;
+
+        //지금 위치에서 이어붙일 수 있는 놈들 중 제일 멀리 가는 놈 고르기
         while (i < n && intervals[i].first <= cur_end) {
             next_end = max(next_end, intervals[i].second);
             i++;
         }
-        if (next_end == cur_end) return -1;   // 커버 불가
+
+        //한 칸도 못 늘렸으면 구멍 뚫린 거라 커버 불가
+        if (next_end == cur_end) return -1;
         cur_end = next_end;
-        count++;
+        cnt++;
     }
-    return count;
+    return cnt;
 }
 ```
 

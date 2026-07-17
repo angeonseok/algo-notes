@@ -41,19 +41,26 @@ void backtrack(상태) {
 
 #### Python
 ```python
+#순서 있는 뽑기. used로 이미 쓴 놈 걸러가면서
 def permutation(arr, path, used):
+    #다 채웠으면 하나 완성
     if len(path) == len(arr):
         print(path)
         return
 
     for i in range(len(arr)):
+        #이미 쓴 놈이니까 스킵
         if used[i]:
             continue
+
+        #일단 놓고 들어가보기
         used[i] = True
         path.append(arr[i])
         permutation(arr, path, used)
-        path.pop()          # 되돌리기
-        used[i] = False     # 되돌리기
+
+        #돌아왔으면 놨던 거 도로 빼기(짝 맞추기)
+        path.pop()
+        used[i] = False
 
 arr = [1, 2, 3]
 permutation(arr, [], [False] * len(arr))
@@ -65,18 +72,25 @@ vector<int> arr = {1, 2, 3};
 vector<int> path;
 vector<bool> used;
 
+//순서 있는 뽑기. used로 이미 쓴 놈 걸러가면서
 void permutation() {
+    //다 채웠으면 하나 완성
     if (path.size() == arr.size()) {
         // path 출력/저장
         return;
     }
     for (int i = 0; i < (int)arr.size(); i++) {
+        //이미 쓴 놈이니까 스킵
         if (used[i]) continue;
+
+        //일단 놓고 들어가보기
         used[i] = true;
         path.push_back(arr[i]);
         permutation();
-        path.pop_back();     // 되돌리기
-        used[i] = false;     // 되돌리기
+
+        //돌아왔으면 놨던 거 도로 빼기(짝 맞추기)
+        path.pop_back();
+        used[i] = false;
     }
 }
 // used.assign(arr.size(), false); permutation();
@@ -86,15 +100,20 @@ void permutation() {
 
 #### Python
 ```python
+#순서 상관없는 뽑기. start로 뒤쪽만 봐서 중복 방지
 def combination(arr, start, path, r):
+    #r개 채웠으면 하나 완성
     if len(path) == r:
         print(path)
         return
 
+    #앞엣 놈 다시 안 보게 start부터
     for i in range(start, len(arr)):
         path.append(arr[i])
         combination(arr, i + 1, path, r)
-        path.pop()          # 되돌리기
+
+        #돌아왔으면 놨던 거 빼기
+        path.pop()
 
 arr = [1, 2, 3, 4]
 combination(arr, 0, [], 2)
@@ -105,15 +124,21 @@ combination(arr, 0, [], 2)
 vector<int> arr = {1, 2, 3, 4};
 vector<int> path;
 
+//순서 상관없는 뽑기. start로 뒤쪽만 봐서 중복 방지
 void combination(int start, int r) {
+    //r개 채웠으면 하나 완성
     if ((int)path.size() == r) {
         // path 출력/저장
         return;
     }
+
+    //앞엣 놈 다시 안 보게 start부터
     for (int i = start; i < (int)arr.size(); i++) {
         path.push_back(arr[i]);
         combination(i + 1, r);
-        path.pop_back();     // 되돌리기
+
+        //돌아왔으면 놨던 거 빼기
+        path.pop_back();
     }
 }
 // combination(0, 2);
@@ -123,13 +148,17 @@ void combination(int start, int r) {
 
 #### Python
 ```python
+#부분집합은 종료조건 없이 매 노드가 다 답
 def subset(arr, idx, path):
-    print(path)             # 현재까지 선택된 원소
+    #지금까지 고른 게 그 자체로 부분집합 하나
+    print(path)
 
     for i in range(idx, len(arr)):
         path.append(arr[i])
         subset(arr, i + 1, path)
-        path.pop()          # 되돌리기
+
+        #돌아왔으면 놨던 거 빼기
+        path.pop()
 
 arr = [1, 2, 3]
 subset(arr, 0, [])
@@ -137,13 +166,16 @@ subset(arr, 0, [])
 
 #### C++
 ```cpp
+//부분집합은 종료조건 없이 매 노드가 다 답
 void subset(int idx) {
-    // path = 현재까지 선택된 원소
+    // path = 지금까지 고른 게 그 자체로 부분집합 하나
 
     for (int i = idx; i < (int)arr.size(); i++) {
         path.push_back(arr[i]);
         subset(i + 1);
-        path.pop_back();     // 되돌리기
+
+        //돌아왔으면 놨던 거 빼기
+        path.pop_back();
     }
 }
 // subset(0);
@@ -155,18 +187,26 @@ void subset(int idx) {
 
 #### Python
 ```python
+#한 행에 하나씩, 충돌 안 나게 퀸 놓기
 def n_queen(row, cols, diag1, diag2):
-    if row == N:
+    #마지막 행까지 다 놨으면 성공한 배치 하나
+    if row == n:
         result.append(cols[:])
         return
 
-    for col in range(N):
+    #이 행에서 놓을 열 다 시도
+    for col in range(n):
+        #같은 열이거나 두 대각선 중 하나라도 겹치면 컷
         if col in cols or (row - col) in diag1 or (row + col) in diag2:
-            continue  # 가지치기
+            continue
+
+        #일단 놓고 대각선까지 점유 표시
         cols.append(col)
         diag1.add(row - col)
         diag2.add(row + col)
         n_queen(row + 1, cols, diag1, diag2)
+
+        #돌아왔으면 놨던 거 싹 다 원복
         cols.pop()
         diag1.remove(row - col)
         diag2.remove(row + col)
@@ -174,24 +214,33 @@ def n_queen(row, cols, diag1, diag2):
 
 #### C++
 ```cpp
-int N;
+int n;
 vector<vector<int>> result;
 vector<int> cols;
-set<int> usedCol, diag1, diag2;   // 열, ↘대각, ↗대각
 
+//열, ↘대각, ↗대각 점유 여부
+set<int> usedCol, diag1, diag2;
+
+//한 행에 하나씩, 충돌 안 나게 퀸 놓기
 void nQueen(int row) {
-    if (row == N) {
+    //마지막 행까지 다 놨으면 성공한 배치 하나
+    if (row == n) {
         result.push_back(cols);
         return;
     }
-    for (int col = 0; col < N; col++) {
+    for (int col = 0; col < n; col++) {
+        //같은 열이거나 두 대각선 중 하나라도 겹치면 컷
         if (usedCol.count(col) || diag1.count(row - col) || diag2.count(row + col))
-            continue;   // 가지치기
+            continue;
+
+        //일단 놓고 대각선까지 점유 표시
         cols.push_back(col);
         usedCol.insert(col);
         diag1.insert(row - col);
         diag2.insert(row + col);
         nQueen(row + 1);
+
+        //돌아왔으면 놨던 거 싹 다 원복
         cols.pop_back();
         usedCol.erase(col);
         diag1.erase(row - col);
@@ -204,37 +253,58 @@ void nQueen(int row) {
 
 #### Python
 ```python
+#같은 값이 섞여있을 때 결과 중복 안 나게 하는 순열
 def permutation_unique(arr, path, used):
+    #다 채웠으면 하나 완성
     if len(path) == len(arr):
         print(path)
         return
 
+    #이 depth에서 이미 써본 값은 다시 안 쓰려고 seen 둠
     seen = set()
     for i in range(len(arr)):
-        if used[i] or arr[i] in seen:  # 같은 값 중복 방지
+        #이미 쓴 인덱스거나, 같은 값 이번 depth에서 또 나오면 스킵
+        if used[i] or arr[i] in seen:
             continue
+
+        #이번 depth에서 이 값 써봤다고 기록
         seen.add(arr[i])
+
+        #일단 놓고 들어가보기
         used[i] = True
         path.append(arr[i])
         permutation_unique(arr, path, used)
+
+        #돌아왔으면 놨던 거 빼기
         path.pop()
         used[i] = False
 ```
 
 #### C++
 ```cpp
+//같은 값이 섞여있을 때 결과 중복 안 나게 하는 순열
 void permutationUnique() {
+    //다 채웠으면 하나 완성
     if (path.size() == arr.size()) {
         // path 출력/저장
         return;
     }
+
+    //이 depth에서 이미 써본 값은 다시 안 쓰려고 seen 둠
     set<int> seen;
     for (int i = 0; i < (int)arr.size(); i++) {
-        if (used[i] || seen.count(arr[i])) continue;   // 같은 값 중복 방지
+        //이미 쓴 인덱스거나, 같은 값 이번 depth에서 또 나오면 스킵
+        if (used[i] || seen.count(arr[i])) continue;
+
+        //이번 depth에서 이 값 써봤다고 기록
         seen.insert(arr[i]);
+
+        //일단 놓고 들어가보기
         used[i] = true;
         path.push_back(arr[i]);
         permutationUnique();
+
+        //돌아왔으면 놨던 거 빼기
         path.pop_back();
         used[i] = false;
     }

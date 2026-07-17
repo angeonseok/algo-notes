@@ -30,43 +30,55 @@
 #### Python
 ```python
 MOD  = 1_000_000_007
-BASE = 31  # 소문자면 31, 대소문자 포함이면 131
 
+#소문자면 31, 대소문자 섞이면 131
+BASE = 31
+
+#누적 해시 h랑 BASE 거듭제곱 p 미리 만들어두기
 def build_hash(s):
     n = len(s)
     h = [0] * (n + 1)
-    p = [1] * (n + 1)  # BASE의 거듭제곱
 
+    #p는 나중에 자릿수 맞춰 빼줄 때 씀
+    p = [1] * (n + 1)
+
+    #앞에서부터 자리 하나씩 밀면서 누적
     for i in range(n):
         h[i+1] = (h[i] * BASE + ord(s[i])) % MOD
         p[i+1] = p[i] * BASE % MOD
 
     return h, p
 
+#s[l:r+1] 구간 해시를 O(1)로 뽑기 (0-indexed)
 def get_hash(h, p, l, r):
-    # s[l:r+1]의 해시값 (0-indexed)
+    #앞부분 기여분을 자릿수 맞춰 빼주면 구간만 남음
     return (h[r+1] - h[l] * p[r-l+1]) % MOD
 ```
 
 #### C++
 ```cpp
 const long long MOD  = 1'000'000'007;
-const long long BASE = 31;   // 소문자면 31, 대소문자 포함이면 131
 
-// h: 누적 해시, p: BASE 거듭제곱
+//소문자면 31, 대소문자 섞이면 131
+const long long BASE = 31;
+
+//h: 누적 해시, p: BASE 거듭제곱 미리 만들어두기
 void buildHash(const string& s, vector<long long>& h, vector<long long>& p) {
     int n = s.size();
     h.assign(n + 1, 0);
     p.assign(n + 1, 1);
+
+    //앞에서부터 자리 하나씩 밀면서 누적
     for (int i = 0; i < n; i++) {
         h[i+1] = (h[i] * BASE + s[i]) % MOD;
         p[i+1] = p[i] * BASE % MOD;
     }
 }
 
-// s[l..r]의 해시값 (0-indexed)
+//s[l..r] 구간 해시를 O(1)로 뽑기 (0-indexed)
 long long getHash(vector<long long>& h, vector<long long>& p, int l, int r) {
-    return ((h[r+1] - h[l] * p[r-l+1]) % MOD + MOD) % MOD;   // 음수 방지
+    //빼다 보면 음수 나올 수 있으니 MOD 한 번 더 더해서 보정
+    return ((h[r+1] - h[l] * p[r-l+1]) % MOD + MOD) % MOD;
 }
 ```
 
@@ -74,14 +86,17 @@ long long getHash(vector<long long>& h, vector<long long>& p, int l, int r) {
 
 #### Python
 ```python
+#MOD/BASE 쌍을 두 개 써서 우연히 겹칠 확률 확 낮추기
 MOD1, BASE1 = 1_000_000_007, 31
 MOD2, BASE2 = 998_244_353,   37
 
+#해시 두 세트를 한 번에 만들기
 def build_double_hash(s):
     n = len(s)
     h1 = [0] * (n + 1); p1 = [1] * (n + 1)
     h2 = [0] * (n + 1); p2 = [1] * (n + 1)
 
+    #단일 해시 두 벌을 나란히 누적하는 것뿐
     for i in range(n):
         h1[i+1] = (h1[i] * BASE1 + ord(s[i])) % MOD1
         p1[i+1] = p1[i] * BASE1 % MOD1
@@ -90,6 +105,7 @@ def build_double_hash(s):
 
     return h1, p1, h2, p2
 
+#두 해시를 묶어서 반환. 둘 다 같아야 같은 문자열로 침
 def get_double_hash(h1, p1, h2, p2, l, r):
     hash1 = (h1[r+1] - h1[l] * p1[r-l+1]) % MOD1
     hash2 = (h2[r+1] - h2[l] * p2[r-l+1]) % MOD2
@@ -98,15 +114,19 @@ def get_double_hash(h1, p1, h2, p2, l, r):
 
 #### C++
 ```cpp
+//MOD/BASE 쌍을 두 개 써서 우연히 겹칠 확률 확 낮추기
 const long long MOD1 = 1'000'000'007, BASE1 = 31;
 const long long MOD2 = 998'244'353,   BASE2 = 37;
 
+//해시 두 세트를 한 번에 만들기
 void buildDoubleHash(const string& s,
                      vector<long long>& h1, vector<long long>& p1,
                      vector<long long>& h2, vector<long long>& p2) {
     int n = s.size();
     h1.assign(n+1, 0); p1.assign(n+1, 1);
     h2.assign(n+1, 0); p2.assign(n+1, 1);
+
+    //단일 해시 두 벌을 나란히 누적하는 것뿐
     for (int i = 0; i < n; i++) {
         h1[i+1] = (h1[i] * BASE1 + s[i]) % MOD1;
         p1[i+1] = p1[i] * BASE1 % MOD1;
@@ -115,6 +135,7 @@ void buildDoubleHash(const string& s,
     }
 }
 
+//두 해시를 묶어서 반환. 둘 다 같아야 같은 문자열로 침
 pair<long long,long long> getDoubleHash(vector<long long>& h1, vector<long long>& p1,
                                         vector<long long>& h2, vector<long long>& p2,
                                         int l, int r) {
@@ -128,16 +149,19 @@ pair<long long,long long> getDoubleHash(vector<long long>& h1, vector<long long>
 
 #### Python
 ```python
-def rabin_karp(text, pattern):
-    N, M = len(text), len(pattern)
-    h_text, p_text = build_hash(text)
-    h_pat,  p_pat  = build_hash(pattern)
+#해시로 패턴 찾기. 문자 하나하나 비교 안 하고 숫자로 후려침
+def rabin_karp(s, p):
+    n, m = len(s), len(p)
+    ht, pt = build_hash(s)
+    hp, pp = build_hash(p)
 
-    target = get_hash(h_pat, p_pat, 0, M - 1)
+    #찾을 패턴 해시 미리 뽑아두기
+    target = get_hash(hp, pp, 0, m - 1)
     result = []
 
-    for i in range(N - M + 1):
-        if get_hash(h_text, p_text, i, i + M - 1) == target:
+    #길이 m짜리 창을 밀면서 해시만 대조
+    for i in range(n - m + 1):
+        if get_hash(ht, pt, i, i + m - 1) == target:
             result.append(i)
 
     return result
@@ -145,17 +169,24 @@ def rabin_karp(text, pattern):
 
 #### C++
 ```cpp
-vector<int> rabinKarp(const string& text, const string& pattern) {
-    int N = text.size(), M = pattern.size();
-    if (M > N) return {};
-    vector<long long> ht, pt, hp, pp;
-    buildHash(text, ht, pt);
-    buildHash(pattern, hp, pp);
+//해시로 패턴 찾기. 문자 하나하나 비교 안 하고 숫자로 후려침
+vector<int> rabinKarp(const string& s, const string& p) {
+    int n = s.size(), m = p.size();
 
-    long long target = getHash(hp, pp, 0, M - 1);
+    //패턴이 더 길면 나올 수가 없음
+    if (m > n) return {};
+
+    vector<long long> ht, pt, hp, pp;
+    buildHash(s, ht, pt);
+    buildHash(p, hp, pp);
+
+    //찾을 패턴 해시 미리 뽑아두기
+    long long target = getHash(hp, pp, 0, m - 1);
     vector<int> result;
-    for (int i = 0; i + M - 1 < N; i++)
-        if (getHash(ht, pt, i, i + M - 1) == target)
+
+    //길이 m짜리 창을 밀면서 해시만 대조
+    for (int i = 0; i + m - 1 < n; i++)
+        if (getHash(ht, pt, i, i + m - 1) == target)
             result.push_back(i);
     return result;
 }
@@ -165,28 +196,35 @@ vector<int> rabinKarp(const string& text, const string& pattern) {
 
 #### Python
 ```python
+#정방향 해시랑 뒤집은 해시가 같으면 팰린드롬
 def is_palindrome(s, l, r, h, p, hr, pr):
-    # h, p: 정방향 해시 / hr, pr: 역방향 해시
+    #h, p는 정방향 / hr, pr은 뒤집은 문자열 해시
     forward  = get_hash(h,  p,  l, r)
+
+    #뒤집은 쪽에선 인덱스도 대칭으로 뒤집어서 봐야 함
     backward = get_hash(hr, pr, len(s)-1-r, len(s)-1-l)
     return forward == backward
 
-# 역방향 해시 빌드
+#뒤집은 문자열로 그냥 똑같이 해시 빌드
 def build_reverse_hash(s):
     return build_hash(s[::-1])
 ```
 
 #### C++
 ```cpp
-// h,p: 정방향 해시 / hr,pr: 역방향 해시 (모두 미리 빌드)
+//정방향 해시랑 뒤집은 해시가 같으면 팰린드롬
+//h,p: 정방향 / hr,pr: 뒤집은 문자열 해시 (모두 미리 빌드)
 bool isPalindrome(int n, int l, int r,
                   vector<long long>& h, vector<long long>& p,
                   vector<long long>& hr, vector<long long>& pr) {
     long long forward  = getHash(h,  p,  l, r);
+
+    //뒤집은 쪽에선 인덱스도 대칭으로 뒤집어서 봐야 함
     long long backward = getHash(hr, pr, n-1-r, n-1-l);
     return forward == backward;
 }
-// 역방향 해시: string rev(s.rbegin(), s.rend()); buildHash(rev, hr, pr);
+
+//뒤집은 해시: string rev(s.rbegin(), s.rend()); buildHash(rev, hr, pr);
 ```
 
 ## 5. 이걸 떠올려야 할 때
